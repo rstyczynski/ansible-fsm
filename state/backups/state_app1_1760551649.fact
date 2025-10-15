@@ -8,7 +8,7 @@ component: app1
 component_state: STARTING
 component_state_method: state_persist
 component_state_previous: STOPPED
-component_state_timestamp: '2025-10-15T20:25:49Z'
+component_state_timestamp: '2025-10-15T21:08:44Z'
 component_state_transition: STOPPED -> STARTING
 component_state_valid: true
 hostname: Ryszards-MacBook-Pro
