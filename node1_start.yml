@@ -1,38 +1,31 @@
 ---
 - name: "Change Component State"
   hosts: "localhost"
-  gather_facts: true #  mandatory
-  
+
   vars:
     target_state: "RUNNING"
     skip_guard: false
     component_name: ""
-    L2_component_name: ""
     
-  tasks:
-    - name: "App1 State Change"
-      include_role:
-        name: L2_state_change
-      vars:
-        L2_component_name: "app1"
-        L2_target_state: "RUNNING"
-        
-    - name: "Node1 State Change"
-      include_role:
-        name: state_change
+  roles:
+    - role: state_change
       vars:
         component_name: "node1"
-    
-    # Display comprehensive state information
-    - name: "Display Final Component States"
-      debug:
-        msg:
-          - "=== FINAL COMPONENT STATE SUMMARY ==="
-          - "Node1 State: {{ component_states.node1.state | default('UNKNOWN') }}"
-          - "Node1 Timestamp: {{ component_states.node1.timestamp | default('UNKNOWN') }}"
-          - "App1 State: {{ component_states.app1.state | default('UNKNOWN') }}"
-          - "App1 Timestamp: {{ component_states.app1.timestamp | default('UNKNOWN') }}"
-          - "All Component States:"
-          - "{{ component_states | to_nice_json(indent=2) }}"
-      tags:
-        - state_summary
+    - role: state_change
+      vars:
+        component_name: "app1"
+
+  tasks:
+  # Display comprehensive state information
+  - name: "Display Final Component States"
+    debug:
+      msg:
+        - "=== FINAL COMPONENT STATE SUMMARY ==="
+        - "Node1 State: {{ component_states.node1.state | default('UNKNOWN') }}"
+        - "Node1 Timestamp: {{ component_states.node1.timestamp | default('UNKNOWN') }}"
+        - "App1 State: {{ component_states.app1.state | default('UNKNOWN') }}"
+        - "App1 Timestamp: {{ component_states.app1.timestamp | default('UNKNOWN') }}"
+        - "All Component States:"
+        - "{{ component_states | to_nice_json(indent=2) }}"
+    tags:
+      - state_summary

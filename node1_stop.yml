@@ -1,8 +1,7 @@
 ---
 - name: "Change Component State"
   hosts: "localhost"
-  gather_facts: true #  mandatory
-  
+
   vars:
     target_state: "STOPPED"
     skip_guard: false
