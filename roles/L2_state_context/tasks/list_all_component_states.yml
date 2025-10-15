@@ -1,0 +1,13 @@
+---
+# List all components and their states
+# This task displays all components and their current states from the map
+# All variables are prefixed with L2_ to avoid namespace conflicts
+
+- name: "L2 Map State - List all components and their states"
+  debug:
+    msg:
+      - "=== L2 All Component States ==="
+      - "{{ L2_global_component_states | to_nice_yaml }}"
+  when: 
+    - L2_global_component_states is defined
+    - L2_state_display_verbose | default(true)

@@ -1,0 +1,49 @@
+---
+# Load a single state file and add it to the component states map
+# This task is called in a loop for each state file
+# All variables are prefixed with L2_ to avoid namespace conflicts
+
+- name: "L2 State Map - Read state file content"
+  slurp:
+    src: "{{ item.path }}"
+  register: L2_state_file_content
+  tags:
+    - L2_state_map
+    - L2_state_loading
+
+- name: "L2 State Map - Parse state file content"
+  set_fact:
+    L2_current_state_data: "{{ L2_state_file_content.content | b64decode | from_yaml }}"
+  tags:
+    - L2_state_map
+    - L2_state_loading
+
+- name: "L2 State Map - Extract component name from file path"
+  set_fact:
+    L2_current_component_name: "{{ item.path | basename | regex_replace('^state_(.+)\\.fact$', '\\1') }}"
+  tags:
+    - L2_state_map
+    - L2_state_loading
+
+- name: "L2 State Map - Store component state data immediately"
+  set_fact:
+    L2_component_states_map: "{{ L2_component_states_map | combine({L2_current_component_name: L2_component_state_data}) }}"
+  vars:
+    L2_component_state_data:
+      state: "{{ L2_current_state_data.component_state | default('UNKNOWN') }}"
+      timestamp: "{{ L2_current_state_data.component_state_timestamp | default('') }}"
+      method: "{{ L2_current_state_data.component_state_method | default('unknown') }}"
+      previous_state: "{{ L2_current_state_data.component_state_previous | default('') }}"
+      transition: "{{ L2_current_state_data.component_state_transition | default('') }}"
+      valid: "{{ L2_current_state_data.component_state_valid | default(false) }}"
+      metadata:
+        hostname: "{{ L2_current_state_data.hostname | default('') }}"
+        user_id: "{{ L2_current_state_data.user_id | default('') }}"
+        playbook_name: "{{ L2_current_state_data.playbook_name | default('') }}"
+        ansible_version: "{{ L2_current_state_data.ansible_version | default({}) }}"
+      file_path: "{{ item.path }}"
+      file_exists: true
+  when: L2_current_state_data is defined and L2_current_state_data.component_state is defined
+  tags:
+    - L2_state_map
+    - L2_state_loading

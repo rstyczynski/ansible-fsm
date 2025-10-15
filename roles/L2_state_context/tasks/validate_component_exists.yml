@@ -1,0 +1,14 @@
+---
+# Validate component exists in map
+# This task ensures the requested component exists in the global state map
+# All variables are prefixed with L2_ to avoid namespace conflicts
+
+- name: "L2 Map State - Validate component exists in map or asset definitions"
+  assert:
+    that:
+      - L2_global_component_states[L2_component] is defined or asset_definitions[L2_component] is defined
+    fail_msg: "Component '{{ L2_component }}' not found in state map or asset definitions. Available components: {{ L2_global_component_states.keys() | list | join(', ') }}"
+    success_msg: "Component '{{ L2_component }}' found in state map or asset definitions"
+  when: 
+    - L2_global_component_states is defined
+    - L2_component is defined

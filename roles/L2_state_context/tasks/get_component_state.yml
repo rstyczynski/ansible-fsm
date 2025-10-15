@@ -1,0 +1,14 @@
+---
+# Get component state from map
+# This task retrieves the current state of a specific component from the global state map
+# All variables are prefixed with L2_ to avoid namespace conflicts
+
+- name: "L2 Map State - Get component state from map"
+  set_fact:
+    L2_current_component_data: "{{ L2_global_component_states[L2_component] | default({}) }}"
+    L2_current_state: "{{ L2_global_component_states[L2_component].state | default(asset_definitions[L2_component].initial_state) }}"
+    L2_state_reading_method: "L2_state_map@roles/L2_state_context/tasks/get_component_state.yml"
+    L2_state_reading_timestamp: "{{ L2_global_component_states[L2_component].timestamp | default(ansible_date_time.iso8601) }}"
+  when: 
+    - L2_global_component_states is defined
+    - L2_component is defined

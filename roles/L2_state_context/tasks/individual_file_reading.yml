@@ -1,0 +1,49 @@
+---
+# Fallback individual file reading for L2_state_context role
+# This handles the original approach when map is not available
+# All variables are prefixed with L2_ to avoid namespace conflicts
+
+- name: "L2 State Context - Check if state fact file exists"
+  stat:
+    path: "{{ L2_state_fact_file }}"
+  register: L2_state_fact_file_stat
+  tags:
+    - L2_state_context
+    - L2_state_reading
+    - L2_individual_file
+
+- name: "L2 State Context - Read state from fact file if available"
+  include_vars:
+    file: "{{ L2_state_fact_file }}"
+  when: L2_state_fact_file_stat.stat.exists
+  tags:
+    - L2_state_context
+    - L2_state_reading
+    - L2_individual_file
+
+- name: "L2 State Context - Set state from fact file"
+  set_fact:
+    L2_current_state: "{{ L2_component_state | default(L2_initial_state) }}"
+    L2_state_reading_method: "fact_file"
+    L2_state_reading_timestamp: "{{ L2_component_state_timestamp | default(ansible_date_time.iso8601) }}"
+  when: L2_state_fact_file_stat.stat.exists and L2_component_state is defined
+  tags:
+    - L2_state_context
+    - L2_state_reading
+    - L2_individual_file
+
+- name: "L2 State Context - Display individual file state information"
+  debug:
+    msg:
+      - "Component: {{ L2_component }}"
+      - "Current State: {{ L2_current_state }}"
+      - "Reading Method: {{ L2_state_reading_method }}"
+      - "Reading Timestamp: {{ L2_state_reading_timestamp }}"
+      - "State Valid: True"
+      - "File Path: {{ L2_state_fact_file }}"
+      - "File Exists: {{ L2_state_fact_file_stat.stat.exists }}"
+  when: L2_state_display_verbose | default(true)
+  tags:
+    - L2_state_context
+    - L2_state_info
+    - L2_individual_file

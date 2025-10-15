@@ -1,0 +1,86 @@
+---
+# Load all component state files into an Ansible map for efficient access
+# This allows keeping separate state files while providing map-based access
+# All variables are prefixed with L2_ to avoid namespace conflicts
+
+- name: "L2 State Map - Initialize component states map"
+  set_fact:
+    L2_component_states_map: {}
+    L2_state_files_loaded: 0
+    L2_state_files_failed: 0
+  tags:
+    - L2_state_map
+    - L2_state_loading
+
+- name: "L2 State Map - Find all state fact files"
+  find:
+    paths: "{{ L2_state_directory | default('./state') }}"
+    patterns: "state_*.fact"
+    recurse: false
+  register: L2_state_files_found
+  tags:
+    - L2_state_map
+    - L2_state_loading
+
+- name: "L2 State Map - Display found state files"
+  debug:
+    msg: "Found {{ L2_state_files_found.files | length }} state files: {{ L2_state_files_found.files | map(attribute='path') | list }}"
+  when: 
+    - L2_state_files_found.files | length > 0
+    - L2_state_map_verbose | default(false)
+  tags:
+    - L2_state_map
+    - L2_state_loading
+
+- name: "L2 State Map - Load each state file and build map entry"
+  include_tasks: load_single_state_file.yml
+  loop: "{{ L2_state_files_found.files }}"
+  loop_control:
+    loop_var: item
+  tags:
+    - L2_state_map
+    - L2_state_loading
+
+- name: "L2 State Map - Handle failed state file loads"
+  set_fact:
+    L2_state_files_failed: "{{ L2_state_files_failed + 1 }}"
+  when: false  # Disabled for now since we're using include_tasks
+  tags:
+    - L2_state_map
+    - L2_state_loading
+
+- name: "L2 State Map - Count successful loads"
+  set_fact:
+    L2_state_files_loaded: "{{ L2_component_states_map.keys() | list | length }}"
+  tags:
+    - L2_state_map
+    - L2_state_loading
+
+- name: "L2 State Map - Display loading summary"
+  debug:
+    msg: "L2 State map loaded: {{ L2_state_files_loaded }} components"
+  tags:
+    - L2_state_map
+    - L2_state_info
+
+- name: "L2 State Map - Display detailed loading results"
+  debug:
+    msg:
+      - "L2 State Map Loading Complete"
+      - "Files loaded: {{ L2_state_files_loaded }}"
+      - "Files failed: {{ L2_state_files_failed }}"
+      - "Components in map: {{ L2_component_states_map.keys() | list }}"
+      - "Map structure: {{ L2_component_states_map | to_nice_yaml }}"
+  when: L2_state_map_verbose | default(false)
+  tags:
+    - L2_state_map
+    - L2_state_info
+
+- name: "L2 State Map - Set global state map facts"
+  set_fact:
+    L2_global_component_states: "{{ L2_component_states_map }}"
+    L2_state_map_loaded: true
+    L2_state_map_timestamp: "{{ ansible_date_time.iso8601 }}"
+  tags:
+    - L2_state_map
+    - L2_state_loading

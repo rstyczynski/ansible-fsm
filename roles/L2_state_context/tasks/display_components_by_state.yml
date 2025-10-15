@@ -1,0 +1,13 @@
+---
+# Display components by state
+# This task displays components filtered by their current state
+# All variables are prefixed with L2_ to avoid namespace conflicts
+
+- name: "L2 Map State - Display components by state"
+  debug:
+    msg:
+      - "=== L2 Components in State: {{ L2_state_filter }} ==="
+      - "{{ L2_components_by_state | to_nice_yaml }}"
+  when: 
+    - L2_components_by_state is defined
+    - L2_state_filter is defined

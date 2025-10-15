@@ -1,0 +1,30 @@
+---
+# Default variables for L2_state_context role
+# All variables are prefixed with L2_ to avoid namespace conflicts
+
+# Component name - should be overridden when using the role
+L2_component_name: "{{ L2_component | default('resource') }}"
+
+# State machine configuration
+L2_state_machine_config: "{{ L2_state_machine }}"
+
+# Fact file path for state persistence
+L2_state_fact_file: "{{ L2_state_machine_config.fact_file_path | default('/etc/ansible/facts.d/state_' + L2_component + '.fact') }}"
+
+# Initial state if no state is detected
+L2_initial_state: "{{ L2_state_machine_config.component[L2_component].initial_state | default('CREATED') }}"
+
+# State detection methods
+L2_state_detection_methods:
+  - fact_file
+  - service_status
+  - process_check
+  - custom_detector
+
+# Custom state detector script path (optional)
+L2_custom_detector_script: "{{ playbook_dir }}/detectors/{{ L2_component }}_state_detector.sh"
+
+# Verbosity control variables
+L2_state_map_verbose: false          # Show detailed state map loading information
+L2_state_display_verbose: true       # Show component state display information
+L2_state_loading_verbose: false     # Show individual file loading details

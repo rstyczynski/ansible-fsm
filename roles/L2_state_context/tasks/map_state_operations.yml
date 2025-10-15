@@ -1,0 +1,48 @@
+---
+# Map-based state operations for efficient component state access
+# This file orchestrates individual operation files for modular state management
+# All variables are prefixed with L2_ to avoid namespace conflicts
+
+- name: "L2 Get component state from map"
+  include_tasks: get_component_state.yml
+  when: 
+    - L2_global_component_states is defined
+    - L2_component is defined
+
+- name: "L2 Validate component exists in map"
+  include_tasks: validate_component_exists.yml
+  when: 
+    - L2_global_component_states is defined
+    - L2_component is defined
+
+- name: "L2 Validate state from map"
+  include_tasks: validate_state_from_map.yml
+  when: 
+    - L2_current_component_data.state is defined
+    - L2_component_state_machine is defined
+
+- name: "L2 Set final state facts from map"
+  include_tasks: set_final_state_facts.yml
+  when: L2_component is defined
+
+- name: "L2 Display component state from map"
+  include_tasks: display_component_state.yml
+  when: L2_component is defined
+
+- name: "L2 List all component states"
+  include_tasks: list_all_component_states.yml
+  when: 
+    - L2_global_component_states is defined
+    - L2_list_all_components | default(false)
+
+- name: "L2 Get components by state"
+  include_tasks: get_components_by_state.yml
+  when: 
+    - L2_global_component_states is defined
+    - L2_state_filter is defined
+
+- name: "L2 Display components by state"
+  include_tasks: display_components_by_state.yml
+  when: 
+    - L2_components_by_state is defined
+    - L2_state_filter is defined

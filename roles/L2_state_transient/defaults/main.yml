@@ -1,0 +1,21 @@
+---
+# Default variables for L2_state_transient role
+
+# Transient state handling settings
+L2_transient_settings:
+  enabled: true
+  auto_handle: true
+  timeout_handling: true
+  failure_recovery: true
+
+# Default timeouts for transient states (in seconds)
+L2_default_timeouts:
+  starting: 300
+  stopping: 120
+  terminating: 180
+
+# Transient state validation
+L2_transient_validation:
+  check_transient_mappings: true
+  validate_timeouts: true
+  require_success_failure_states: true

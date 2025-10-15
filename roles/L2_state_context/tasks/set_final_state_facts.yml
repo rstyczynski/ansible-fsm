@@ -1,0 +1,14 @@
+---
+# Set final state facts from map
+# This task sets the final state facts based on the component data from the map
+# All variables are prefixed with L2_ to avoid namespace conflicts
+
+- name: "L2 Map State - Set final state facts from map"
+  set_fact:
+    L2_component_state: "{{ L2_current_state }}"
+    L2_component_state_timestamp: "{{ L2_state_reading_timestamp }}"
+    L2_component_state_method: "{{ L2_state_reading_method }}"
+    L2_component_state_valid: "{{ L2_current_component_data.valid | default(true) }}"
+    L2_component_state_previous: "{{ L2_current_component_data.previous_state | default('') }}"
+    L2_component_state_transition: "{{ L2_current_component_data.transition | default('') }}"
+    L2_component_state_metadata: "{{ L2_current_component_data.metadata | default({}) }}"

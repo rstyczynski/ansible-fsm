@@ -91,10 +91,10 @@
 # State Context - Read current state
 - name: "L2 State Change: State Context - Read current state"
   ansible.builtin.include_role:
-    name: state_context
+    name: L2_state_context
   vars:
-    component: "{{ L2_component_name }}"
-    asset_type: "{{ L2_asset_type }}"
+    L2_component: "{{ L2_component_name }}"
+    L2_asset_type: "{{ L2_asset_type }}"
   tags:
     - state_context
     - state_reading
@@ -116,11 +116,11 @@
 
 - name: "L2 State Change: State Transient - Handle transient state mapping"
   ansible.builtin.include_role:
-    name: state_transient
+    name: L2_state_transient
   vars:
-    component: "{{ L2_component_name }}"
+    L2_component: "{{ L2_component_name }}"
     L2_target_state: "{{ L2_actual_L2_target_state }}"
-    current_state: "{{ L2_current_state }}"
+    L2_current_state: "{{ L2_current_state }}"
   tags:
     - state_transient
     - transient_handling
@@ -161,13 +161,15 @@
     - transition_validation
 
 - name: "L2 State Change: PRE State Guard - Validate basic transition"
-  ansible.builtin.include_tasks: "{{ playbook_dir }}/roles/L2_state_guard/tasks/pre_guard.yml"
-  vars:
-    component: "{{ L2_component_name }}"
-    asset_type: "{{ L2_asset_type }}"
-    current_state: "{{ L2_current_state }}"
-    L2_target_state: "{{ L2_actual_L2_target_state }}"
-    component_dependencies: "{{ asset_definitions[L2_component_name].dependencies | default([]) }}"
+  #ansible.builtin.include_tasks: "{{ playbook_dir }}/roles/L2_state_guard/tasks/pre_guard.yml"
+  ansible.builtin.include_role:
+    name: L2_state_guard
+    vars:
+      L2_component: "{{ L2_component_name }}"
+      L2_asset_type: "{{ L2_asset_type }}"
+      L2_current_state: "{{ L2_current_state }}"
+      L2_target_state: "{{ L2_actual_L2_target_state }}"
+      L2_component_dependencies: "{{ asset_definitions[L2_component_name].dependencies | default([]) }}"
   when: 
     - L2_target_state is defined
     - L2_target_state != ""
@@ -297,13 +299,15 @@
     - not (L2_asset_type_info.disable_post_state_guard | default(false))
 
 - name: "L2 State Change: POST State Guard - Validate final state"
-  ansible.builtin.include_tasks: "{{ playbook_dir }}/roles/L2_state_guard/tasks/post_guard.yml"
-  vars:
-    component: "{{ L2_component_name }}"
-    asset_type: "{{ L2_asset_type }}"
-    current_state: "{{ L2_current_state_from_file.component_state | default(L2_current_state) }}"
-    L2_target_state: "{{ L2_original_L2_target_state }}"
-    component_dependencies: "{{ asset_definitions[L2_component_name].dependencies | default([]) }}"
+  #ansible.builtin.include_tasks: "{{ playbook_dir }}/roles/L2_state_guard/tasks/post_guard.yml"
+  ansible.builtin.include_role:
+    name: L2_state_guard
+    vars:
+      L2_component: "{{ L2_component_name }}"
+      L2_asset_type: "{{ L2_asset_type }}"
+      L2_current_state: "{{ L2_current_state_from_file.component_state | default(L2_current_state) }}"
+      L2_target_state: "{{ L2_original_L2_target_state }}"
+      L2_component_dependencies: "{{ asset_definitions[L2_component_name].dependencies | default([]) }}"
   when: 
     - L2_original_L2_target_state is defined
     - L2_original_L2_target_state != ""
