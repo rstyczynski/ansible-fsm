@@ -64,10 +64,17 @@
 
 - name: "State Context - Set final state facts"
   set_fact:
-    component_state: "{{ current_state }}"
-    component_state_timestamp: "{{ state_reading_timestamp }}"
-    component_state_method: "{{ state_reading_method }}"
-    component_state_valid: true
+    # component_state: "{{ current_state }}"
+    # component_state_timestamp: "{{ state_reading_timestamp }}"
+    # component_state_method: "{{ state_reading_method }}"
+    # component_state_valid: true
+    # Store component state in a map with component name as key
+    component_states: "{{ component_states | default({}) | combine({component: {
+      'state': current_state,
+      'timestamp': state_reading_timestamp,
+      'method': state_reading_method,
+      'valid': true
+    }}) }}"
   tags:
     - state_context
     - state_reading

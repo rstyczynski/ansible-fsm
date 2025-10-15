@@ -5,37 +5,34 @@
 
 - name: "State Change: Initialize computed variables with isolation"
   ansible.builtin.set_fact:
-    # Create component-specific variable namespace to prevent contamination
-    # Use override_component_name directly without intermediate variables
-    state_change_scope: "{{ override_component_name | default(component_name) }}"
-    isolated_component: "{{ override_component_name | default(component_name) }}"
-    isolated_asset_type: "{{ asset_definitions[override_component_name | default(component_name)].asset_type | default('app') }}"
-    isolated_component_services: "{{ asset_definitions[override_component_name | default(component_name)].services | default([]) }}"
-    isolated_component_processes: "{{ asset_definitions[override_component_name | default(component_name)].processes | default([]) }}"
-    isolated_component_ports: "{{ asset_definitions[override_component_name | default(component_name)].ports | default([]) }}"
-    isolated_component_dependencies: "{{ asset_definitions[override_component_name | default(component_name)].dependencies | default([]) }}"
-    isolated_component_maintenance_window: "{{ asset_definitions[override_component_name | default(component_name)].maintenance_window | default({}) }}"
-    isolated_component_state_machine_spec: "{{ asset_definitions[override_component_name | default(component_name)].state_machine_spec | default('app_lifecycle') }}"
-    isolated_actual_target_state: "{{ target_state }}"
+    component: "{{ component_name }}"
+    asset_type: "{{ asset_definitions[component_name].asset_type | default('app') }}"
+    component_services: "{{ asset_definitions[component_name].services | default([]) }}"
+    component_processes: "{{ asset_definitions[component_name].processes | default([]) }}"
+    component_ports: "{{ asset_definitions[component_name].ports | default([]) }}"
+    component_dependencies: "{{ asset_definitions[component_name].dependencies | default([]) }}"
+    component_maintenance_window: "{{ asset_definitions[component_name].maintenance_window | default({}) }}"
+    component_state_machine_spec: "{{ asset_definitions[component_name].state_machine_spec | default('app_lifecycle') }}"
+    actual_target_state: "{{ target_state }}"
   tags:
     - always
     - variable_isolation
 
 - name: "State Change: Initialize state machine variables with isolation"
   ansible.builtin.set_fact:
-    state_machine_config: "{{ state_machine | combine({'fact_file_path': './state/state_' + isolated_component + '.fact'}) }}"
-    isolated_component_state_machine: "{{ state_machines[isolated_component_state_machine_spec] }}"
-    isolated_asset_type_info: "{{ asset_types[isolated_asset_type] | default({}) }}"
-    isolated_transition_role_name: "{{ asset_types[isolated_asset_type].role_name | default('transition_' + isolated_asset_type) }}"
-    isolated_transition_role_collection: "{{ asset_types[isolated_asset_type].role_collection | default('') }}"
-    isolated_transition_role_timeout: "{{ asset_types[isolated_asset_type].default_timeout | default(300) }}"
+    state_machine_config: "{{ state_machine | combine({'fact_file_path': './state/state_' + component + '.fact'}) }}"
+    component_state_machine: "{{ state_machines[component_state_machine_spec] }}"
+    asset_type_info: "{{ asset_types[asset_type] | default({}) }}"
+    transition_role_name: "{{ asset_types[asset_type].role_name | default('transition_' + asset_type) }}"
+    transition_role_collection: "{{ asset_types[asset_type].role_collection | default('') }}"
+    transition_role_timeout: "{{ asset_types[asset_type].default_timeout | default(300) }}"
   tags:
     - always
     - variable_isolation
 
 - name: "State Change: Build full role name with isolation"
   ansible.builtin.set_fact:
-    isolated_transition_role_full_name: "{{ (isolated_transition_role_collection + '.' + isolated_transition_role_name) if isolated_transition_role_collection != '' else isolated_transition_role_name }}"
+    transition_role_full_name: "{{ (transition_role_collection + '.' + transition_role_name) if transition_role_collection != '' else transition_role_name }}"
   tags:
     - always
     - variable_isolation
@@ -43,18 +40,18 @@
 - name: "State Change: Pre-Task - Validate component type configuration"
   assert:
     that:
-      - isolated_asset_type in asset_types
-    fail_msg: "Asset type '{{ isolated_asset_type }}' is not defined in asset_types configuration. Available types: {{ asset_types.keys() | list | join(', ') }}"
-    success_msg: "Asset type '{{ isolated_asset_type }}' is valid"
+      - asset_type in asset_types
+    fail_msg: "Asset type '{{ asset_type }}' is not defined in asset_types configuration. Available types: {{ asset_types.keys() | list | join(', ') }}"
+    success_msg: "Asset type '{{ asset_type }}' is valid"
   when: asset_type_config.validate_role_existence | default(true)
 
 - name: "State Change: Pre-Task - Validate role existence"
   assert:
     that:
-      - isolated_transition_role_name is defined
-      - isolated_transition_role_name != ""
-    fail_msg: "Failed to resolve role name for asset type '{{ isolated_asset_type }}'"
-    success_msg: "Resolved role '{{ isolated_transition_role_name }}' for asset type '{{ isolated_asset_type }}'"
+      - transition_role_name is defined
+      - transition_role_name != ""
+    fail_msg: "Failed to resolve role name for asset type '{{ asset_type }}'"
+    success_msg: "Resolved role '{{ transition_role_name }}' for asset type '{{ asset_type }}'"
 
 - name: "State Change: Pre-Task - Validate required variables"
   ansible.builtin.assert:
@@ -67,10 +64,10 @@
 - name: "State Change: Pre-Task - Validate state if provided"
   ansible.builtin.assert:
     that:
-      - target_state == "" or target_state in isolated_component_state_machine.states
+      - target_state == "" or target_state in component_state_machine.states
     fail_msg: >-
       Invalid state '{{ target_state }}' for component '{{ component_name }}'.
-      Valid states: {{ isolated_component_state_machine.states | join(', ') }}
+      Valid states: {{ component_state_machine.states | join(', ') }}
     success_msg: "State '{{ target_state }}' is valid for component '{{ component_name }}'"
   when: target_state != ""
 
@@ -90,20 +87,22 @@
     name: state_context
   vars:
     component: "{{ component_name }}"
-    asset_type: "{{ isolated_asset_type }}"
+    asset_type: "{{ asset_type }}"
   tags:
     - state_context
     - state_reading
     - "state_reading_{{ component_name }}"
 
+# State Change: Set component state in global map (moved to end of role)
+
 # State Transient - Handle automatic transient state mapping
 - name: "State Change: Set variables for state_transient with isolation"
   ansible.builtin.set_fact:
-    isolated_component: "{{ component_name }}"
-    isolated_target_state: "{{ target_state }}"
-    isolated_current_state: "{{ component_state }}"
-    isolated_actual_target_state: "{{ target_state }}"
-    isolated_original_target_state: "{{ target_state }}"
+    component: "{{ component_name }}"
+    target_state: "{{ target_state }}"
+    current_state: "{{ component_state }}"
+    actual_target_state: "{{ target_state }}"
+    original_target_state: "{{ target_state }}"
   tags:
     - always
     - variable_isolation
@@ -113,7 +112,7 @@
     name: state_transient
   vars:
     component: "{{ component_name }}"
-    target_state: "{{ isolated_actual_target_state }}"
+    target_state: "{{ actual_target_state }}"
     current_state: "{{ component_state }}"
   tags:
     - state_transient
@@ -121,12 +120,12 @@
 
 - name: "State Change: Capture transient state results"
   ansible.builtin.set_fact:
-    isolated_actual_target_state: "{{ actual_target_state | default(isolated_actual_target_state) }}"
-    isolated_transient_state: "{{ transient_state | default('') }}"
-    isolated_transient_success_state: "{{ transient_success_state | default('') }}"
-    isolated_transient_failure_state: "{{ transient_failure_state | default('') }}"
-    isolated_transient_timeout: "{{ transient_timeout | default(300) }}"
-    isolated_skip_transient_mapping: "{{ skip_transient_mapping | default(false) }}"
+    actual_target_state: "{{ actual_target_state | default(actual_target_state) }}"
+    transient_state: "{{ transient_state | default('') }}"
+    transient_success_state: "{{ transient_success_state | default('') }}"
+    transient_failure_state: "{{ transient_failure_state | default('') }}"
+    transient_timeout: "{{ transient_timeout | default(300) }}"
+    skip_transient_mapping: "{{ skip_transient_mapping | default(false) }}"
   tags:
     - state_transient
     - transient_handling
@@ -144,12 +143,12 @@
 # PRE State Guard - Basic transition validation before asset transition
 - name: "State Change: PRE State Guard - Skip PRE guard validation for configured asset types"
   ansible.builtin.debug:
-    msg: "PRE State guard validation skipped for {{ component_name }} (asset_type={{ isolated_asset_type }}, disable_pre_state_guard=true)"
+    msg: "PRE State guard validation skipped for {{ component_name }} (asset_type={{ asset_type }}, disable_pre_state_guard=true)"
   when: 
     - target_state is defined
     - target_state != ""
     - component_state is defined
-    - isolated_asset_type_info.disable_pre_state_guard | default(false)
+    - asset_type_info.disable_pre_state_guard | default(false)
   tags:
     - pre_state_guard
     - transition_validation
@@ -157,17 +156,17 @@
 - name: "State Change: PRE State Guard - Validate basic transition"
   ansible.builtin.include_tasks: "{{ playbook_dir }}/roles/state_guard/tasks/pre_guard.yml"
   vars:
-    component: "{{ override_component_name | default(component_name) }}"
-    asset_type: "{{ isolated_asset_type }}"
+    component: "{{ component_name }}"
+    asset_type: "{{ asset_type }}"
     current_state: "{{ component_state }}"
     target_state: "{{ actual_target_state }}"
-    component_dependencies: "{{ isolated_component_dependencies }}"
+    component_dependencies: "{{ asset_definitions[component_name].dependencies | default([]) }}"
   when: 
     - target_state is defined
     - target_state != ""
     - component_state is defined
     - not (skip_guard | default(false))
-    - not (isolated_asset_type_info.disable_pre_state_guard | default(false))
+    - not (asset_type_info.disable_pre_state_guard | default(false))
   tags:
     - pre_state_guard
     - transition_validation
@@ -177,14 +176,14 @@
   ansible.builtin.include_role:
     name: state_persist
   vars:
-    component: "{{ override_component_name | default(component_name) }}"
-    asset_type: "{{ isolated_asset_type }}"
-    new_state: "{{ isolated_transient_state }}"
+    component: "{{ component_name }}"
+    asset_type: "{{ asset_type }}"
+    new_state: "{{ transient_state }}"
   when: 
-    - state is defined
-    - state != ""
-    - isolated_transient_state != ""
-    - not isolated_skip_transient_mapping
+    - target_state is defined
+    - target_state != ""
+    - transient_state != ""
+    - not skip_transient_mapping
   tags:
     - state_persist
     - transient_state_set
@@ -192,24 +191,24 @@
 # Dynamic transition execution based on component type
 - name: "State Change: Execute transition actions for component"
   ansible.builtin.include_role:
-    name: "{{ isolated_transition_role_full_name }}"
+    name: "{{ transition_role_full_name }}"
   vars:
-    target_state: "{{ isolated_actual_target_state }}"
+    target_state: "{{ actual_target_state }}"
     current_state: "{{ component_state }}"
     component_instance: "{{ component_name }}"
-    asset_type_info: "{{ isolated_asset_type_info }}"
-    role_timeout: "{{ isolated_transition_role_timeout }}"
-    component_dependencies: "{{ isolated_component_dependencies }}"
-    transient_state: "{{ isolated_transient_state }}"
-    transient_success_state: "{{ isolated_transient_success_state }}"
-    transient_failure_state: "{{ isolated_transient_failure_state }}"
-    transient_timeout: "{{ isolated_transient_timeout }}"
+    asset_type_info: "{{ asset_type_info }}"
+    role_timeout: "{{ transition_role_timeout }}"
+    component_dependencies: "{{ asset_definitions[component_name].dependencies | default([]) }}"
+    transient_state: "{{ transient_state }}"
+    transient_success_state: "{{ transient_success_state }}"
+    transient_failure_state: "{{ transient_failure_state }}"
+    transient_timeout: "{{ transient_timeout }}"
   when: 
     - component_state is defined
     - target_state is defined
     - target_state != ""
     - not dry_run
-    - not isolated_skip_transient_mapping
+    - not skip_transient_mapping
   tags:
     - transition_execution
     - "execute_actions_{{ component_name }}"
@@ -221,7 +220,7 @@
     - component_state is defined
     - target_state is defined
     - target_state != ""
-    - isolated_skip_transient_mapping
+    - skip_transient_mapping
   tags:
     - transition_execution
     - skip_transition
@@ -231,14 +230,14 @@
   ansible.builtin.include_role:
     name: state_persist
   vars:
-    component: "{{ override_component_name | default(component_name) }}"
-    asset_type: "{{ isolated_asset_type }}"
+    component: "{{ component_name }}"
+    asset_type: "{{ asset_type }}"
     new_state: "{{ target_state }}"
   when: 
-    - state is defined
-    - state != ""
-    - isolated_transient_state != ""
-    - not isolated_skip_transient_mapping
+    - target_state is defined
+    - target_state != ""
+    - transient_state != ""
+    - not skip_transient_mapping
   tags:
     - state_persist
     - final_state_completion
@@ -248,14 +247,14 @@
   ansible.builtin.include_role:
     name: state_persist
   vars:
-    component: "{{ override_component_name | default(component_name) }}"
-    asset_type: "{{ isolated_asset_type }}"
+    component: "{{ component_name }}"
+    asset_type: "{{ asset_type }}"
     new_state: "{{ target_state }}"
   when: 
-    - state is defined
-    - state != ""
-    - isolated_transient_state == ""
-    - isolated_skip_transient_mapping
+    - target_state is defined
+    - target_state != ""
+    - transient_state == ""
+    - skip_transient_mapping
   tags:
     - state_persist
     - state_persistence
@@ -263,12 +262,12 @@
 # POST State Guard - Final state validation after asset transition
 - name: "State Change: POST State Guard - Skip POST guard validation for configured asset types"
   ansible.builtin.debug:
-    msg: "POST State guard validation skipped for {{ component_name }} (asset_type={{ isolated_asset_type }}, disable_post_state_guard=true)"
+    msg: "POST State guard validation skipped for {{ component_name }} (asset_type={{ asset_type }}, disable_post_state_guard=true)"
   when: 
     - target_state is defined
     - target_state != ""
     - component_state is defined
-    - isolated_asset_type_info.disable_post_state_guard | default(false)
+    - asset_type_info.disable_post_state_guard | default(false)
   tags:
     - post_state_guard
     - transition_validation
@@ -276,17 +275,17 @@
 - name: "State Change: POST State Guard - Validate final state"
   ansible.builtin.include_tasks: "{{ playbook_dir }}/roles/state_guard/tasks/post_guard.yml"
   vars:
-    component: "{{ override_component_name | default(component_name) }}"
-    asset_type: "{{ isolated_asset_type }}"
+    component: "{{ component_name }}"
+    asset_type: "{{ asset_type }}"
     current_state: "{{ component_state }}"
-    target_state: "{{ isolated_original_target_state }}"
-    component_dependencies: "{{ isolated_component_dependencies }}"
+    target_state: "{{ original_target_state }}"
+    component_dependencies: "{{ asset_definitions[component_name].dependencies | default([]) }}"
   when: 
-    - isolated_original_target_state is defined
-    - isolated_original_target_state != ""
+    - original_target_state is defined
+    - original_target_state != ""
     - component_state is defined
     - not (skip_guard | default(false))
-    - not (isolated_asset_type_info.disable_post_state_guard | default(false))
+    - not (asset_type_info.disable_post_state_guard | default(false))
   tags:
     - post_state_guard
     - transition_validation
@@ -303,3 +302,23 @@
   ansible.builtin.debug:
     msg: "State fact file: {{ state_machine_config.fact_file_path | default('/etc/ansible/facts.d/state_' + component_name + '.fact') }}"
   when: not dry_run
+
+# State Change: Set component state in global map with FINAL state values
+- name: "State Change: Get current timestamp"
+  ansible.builtin.command: date -u +"%Y-%m-%dT%H:%M:%SZ"
+  register: current_timestamp
+  changed_when: false
+
+- name: "State Change: Store FINAL component state in global map"
+  ansible.builtin.set_fact:
+    component_states: "{{ component_states | default({}) | combine({component_name: {
+      'state': target_state,
+      'timestamp': current_timestamp.stdout,
+      'method': 'state_change',
+      'valid': true
+    }}) }}"
+  tags:
+    - state_context
+    - state_reading
+    - component_states_map
+    - final_state

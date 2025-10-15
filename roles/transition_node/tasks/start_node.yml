@@ -18,6 +18,10 @@
 # resource logic block | START
 #
 - block:
+    - name: "Node :: Start :: Pause for 3 seconds"
+      pause:
+        seconds: 3
+
     - name: "Node :: Start :: Display dependencies and start logic"
       debug:
         msg:

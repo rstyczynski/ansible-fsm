@@ -1,0 +1,32 @@
+---
+- name: "Change Component State"
+  hosts: "localhost"
+  gather_facts: true #  mandatory
+  
+  vars:
+    target_state: "RUNNING"
+    skip_guard: false
+    component_name: ""
+    
+  roles:
+    - role: state_change
+      vars:
+        component_name: "app1"
+    - role: state_change
+      vars:
+        component_name: "node1"
+
+  tasks:
+  # Display comprehensive state information
+  - name: "Display Final Component States"
+    debug:
+      msg:
+        - "=== FINAL COMPONENT STATE SUMMARY ==="
+        - "Node1 State: {{ component_states.node1.state | default('UNKNOWN') }}"
+        - "Node1 Timestamp: {{ component_states.node1.timestamp | default('UNKNOWN') }}"
+        - "App1 State: {{ component_states.app1.state | default('UNKNOWN') }}"
+        - "App1 Timestamp: {{ component_states.app1.timestamp | default('UNKNOWN') }}"
+        - "All Component States:"
+        - "{{ component_states | to_nice_json(indent=2) }}"
+    tags:
+      - state_summary

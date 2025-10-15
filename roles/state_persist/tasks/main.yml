@@ -2,9 +2,14 @@
 # Main tasks for state_persist role
 # This role persists component state to fact files for auditability and state tracking
 
+- name: "State Persist - Get current timestamp"
+  ansible.builtin.command: date -u +"%Y-%m-%dT%H:%M:%SZ"
+  register: current_timestamp
+  changed_when: false
+
 - name: "State Persist - Initialize state persistence for {{ component }}"
   set_fact:
-    persistence_timestamp: "{{ ansible_date_time.iso8601 }}"
+    persistence_timestamp: '{{ current_timestamp.stdout }}'
     persistence_success: false
   tags:
     - state_persist
@@ -90,11 +95,11 @@
     state_fact_content:
       component: "{{ component }}"
       component_state: "{{ new_state }}"
-      component_state_timestamp: "{{ persistence_timestamp }}"
+      component_state_timestamp: "{{ current_timestamp.stdout }}"
       component_state_method: "state_persist"
       component_state_valid: true
-      component_state_previous: "{{ component_state | default('') }}"
-      component_state_transition: "{{ component_state | default('initial') }} -> {{ new_state }}"
+      component_state_previous: "{{ current_state | default('') }}"
+      component_state_transition: "{{ current_state | default('initial') }} -> {{ new_state }}"
   tags:
     - state_persist
     - state_persistence
@@ -185,6 +190,14 @@
     - state_persist
     - state_info
 
+# - name: "State Context - Set final state facts"
+#   set_fact:
+#     # component_state: "{{ current_state }}"
+#     # component_state_timestamp: "{{ state_reading_timestamp }}"
+#     # component_state_method: "{{ state_reading_method }}"
+#     # component_state_valid: true
+#     # Note: component_states map is now handled by state_change role
+    
 - name: "State Persist - Fail if persistence failed"
   fail:
     msg: "State persistence failed for component '{{ component }}'"

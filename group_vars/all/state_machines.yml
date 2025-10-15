@@ -17,15 +17,15 @@ state_machines:
     
     transitions:
       CREATED:
-        to: [STARTING, FAILED]
+        to: [STARTING, RUNNING, FAILED]
       STARTING:
         to: [RUNNING, FAILED]
       RUNNING:
-        to: [STOPPING, MAINTENANCE, FAILED]
+        to: [STOPPING, STOPPED, MAINTENANCE, FAILED]
       STOPPING:
         to: [STOPPED, FAILED]
       STOPPED:
-        to: [STARTING,MAINTENANCE, TERMINATING, FAILED]
+        to: [STARTING, RUNNING, MAINTENANCE, TERMINATING, FAILED]
       TERMINATING:
         to: [TERMINATED, FAILED]
       TERMINATED:
@@ -33,7 +33,7 @@ state_machines:
       MAINTENANCE:
         to: [RUNNING, STOPPED, FAILED]
       FAILED:
-        to: [STARTING, STOPPED, TERMINATED]  # Recovery transitions
+        to: [STARTING, RUNNING, STOPPING, STOPPED, TERMINATED]  # Recovery transitions
     
     initial_state: CREATED
     

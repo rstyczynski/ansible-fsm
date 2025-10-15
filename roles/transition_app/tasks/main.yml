@@ -28,13 +28,8 @@
 - name: "Transition App Instance - Execute state-specific actions"
   include_tasks: "{{ item }}.yml"
   loop:
-    - start_dependencies
-    - stop_dependencies
-    - start_services
-    - stop_services
-    - verify_health
-    - cleanup_resources
-    - handle_failure
+    - start
+    - stop
   when: 
     - target_state is defined
     - not ansible_check_mode

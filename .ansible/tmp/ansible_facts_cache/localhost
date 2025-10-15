@@ -1,13 +1,12 @@
 {
     "_ansible_facts_gathered": true,
     "ansible_all_ipv4_addresses": [
-        "192.168.17.132",
-        "192.168.16.79"
+        "10.5.9.1"
     ],
     "ansible_all_ipv6_addresses": [
-        "fe80::1079:3dab:5cb9:179%en0",
-        "fe80::1823:acff:fe97:ceb6%awdl0",
-        "fe80::1823:acff:fe97:ceb6%llw0",
+        "fe80::1473:ce01:a4d5:1cb2%en0",
+        "fe80::88:7dff:feab:d4a1%awdl0",
+        "fe80::88:7dff:feab:d4a1%llw0",
         "fe80::175e:c404:9f14:de64%utun0",
         "fe80::a466:a405:90e9:106e%utun1",
         "fe80::82fd:9073:b71:9e05%utun2",
@@ -15,8 +14,7 @@
         "fe80::5063:8f22:964:2ec%utun4",
         "fe80::fefa:bfc1:df80:8134%utun5",
         "fe80::aedc:1bdd:8180:28dc%utun6",
-        "fe80::69b6:74cf:f8f8:ae22%utun7",
-        "fe80::1897:a305:6d89:15f4%en7"
+        "fe80::69b6:74cf:f8f8:ae22%utun7"
     ],
     "ansible_anpi0": {
         "device": "anpi0",
@@ -125,12 +123,12 @@
         "ipv4": [],
         "ipv6": [
             {
-                "address": "fe80::1823:acff:fe97:ceb6%awdl0",
+                "address": "fe80::88:7dff:feab:d4a1%awdl0",
                 "prefix": "64",
                 "scope": "0x10"
             }
         ],
-        "macaddress": "1a:23:ac:97:ce:b6",
+        "macaddress": "02:88:7d:ab:d4:a1",
         "media": "Unknown",
         "media_select": "autoselect",
         "mtu": "1500",
@@ -168,17 +166,17 @@
     "ansible_date_time": {
         "date": "2025-10-15",
         "day": "15",
-        "epoch": "1760518382",
-        "epoch_int": "1760518382",
-        "hour": "10",
-        "iso8601": "2025-10-15T08:53:02Z",
-        "iso8601_basic": "20251015T105302178340",
-        "iso8601_basic_short": "20251015T105302",
-        "iso8601_micro": "2025-10-15T08:53:02.178340Z",
-        "minute": "53",
+        "epoch": "1760551649",
+        "epoch_int": "1760551649",
+        "hour": "20",
+        "iso8601": "2025-10-15T18:07:29Z",
+        "iso8601_basic": "20251015T200729820225",
+        "iso8601_basic_short": "20251015T200729",
+        "iso8601_micro": "2025-10-15T18:07:29.820225Z",
+        "minute": "07",
         "month": "10",
-        "second": "02",
-        "time": "10:53:02",
+        "second": "29",
+        "time": "20:07:29",
         "tz": "CEST",
         "tz_dst": "CEST",
         "tz_offset": "+0200",
@@ -188,9 +186,9 @@
         "year": "2025"
     },
     "ansible_default_ipv4": {
-        "address": "192.168.16.79",
-        "broadcast": "192.168.19.255",
-        "device": "en7",
+        "address": "10.5.9.1",
+        "broadcast": "10.5.15.255",
+        "device": "en0",
         "flags": [
             "UP",
             "BROADCAST",
@@ -199,19 +197,14 @@
             "SIMPLEX",
             "MULTICAST"
         ],
-        "gateway": "192.168.16.1",
-        "interface": "en7",
-        "macaddress": "84:3a:5b:ba:e1:d2",
+        "gateway": "10.5.1.1",
+        "interface": "en0",
+        "macaddress": "0e:9e:7e:db:7f:83",
         "media": "Unknown",
-        "media_options": [
-            "full-duplex",
-            "flow-control"
-        ],
         "media_select": "autoselect",
-        "media_type": "1000base",
         "mtu": "1500",
-        "netmask": "255.255.252.0",
-        "network": "192.168.16.0",
+        "netmask": "255.255.240.0",
+        "network": "10.5.0.0",
         "options": [
             "PERFORMNUD",
             "DAD"
@@ -226,7 +219,8 @@
     "ansible_distribution_version": "15.7.1",
     "ansible_dns": {
         "nameservers": [
-            "192.168.16.1"
+            "77.109.128.2",
+            "213.144.129.20"
         ]
     },
     "ansible_domain": "0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa",
@@ -244,19 +238,19 @@
         ],
         "ipv4": [
             {
-                "address": "192.168.17.132",
-                "broadcast": "192.168.19.255",
-                "netmask": "255.255.252.0",
-                "network": "192.168.16.0"
+                "address": "10.5.9.1",
+                "broadcast": "10.5.15.255",
+                "netmask": "255.255.240.0",
+                "network": "10.5.0.0"
             }
         ],
         "ipv6": [
             {
-                "address": "fe80::1079:3dab:5cb9:179%en0",
+                "address": "fe80::1473:ce01:a4d5:1cb2%en0",
                 "prefix": "64"
             }
         ],
-        "macaddress": "3e:86:55:42:52:20",
+        "macaddress": "0e:9e:7e:db:7f:83",
         "media": "Unknown",
         "media_select": "autoselect",
         "mtu": "1500",
@@ -414,46 +408,6 @@
         "status": "inactive",
         "type": "ether"
     },
-    "ansible_en7": {
-        "device": "en7",
-        "flags": [
-            "UP",
-            "BROADCAST",
-            "SMART",
-            "RUNNING",
-            "SIMPLEX",
-            "MULTICAST"
-        ],
-        "ipv4": [
-            {
-                "address": "192.168.16.79",
-                "broadcast": "192.168.19.255",
-                "netmask": "255.255.252.0",
-                "network": "192.168.16.0"
-            }
-        ],
-        "ipv6": [
-            {
-                "address": "fe80::1897:a305:6d89:15f4%en7",
-                "prefix": "64"
-            }
-        ],
-        "macaddress": "84:3a:5b:ba:e1:d2",
-        "media": "Unknown",
-        "media_options": [
-            "full-duplex",
-            "flow-control"
-        ],
-        "media_select": "autoselect",
-        "media_type": "1000base",
-        "mtu": "1500",
-        "options": [
-            "PERFORMNUD",
-            "DAD"
-        ],
-        "status": "active",
-        "type": "ether"
-    },
     "ansible_env": {
         "BUNDLED_DEBUGPY_PATH": "/Users/rstyczynski/.cursor/extensions/ms-python.debugpy-2025.14.0-darwin-arm64/bundled/libs/debugpy",
         "COLORTERM": "truecolor",
@@ -524,7 +478,6 @@
         "en4",
         "en5",
         "en6",
-        "en7",
         "gif0",
         "llw0",
         "lo0",
@@ -555,12 +508,12 @@
         "ipv4": [],
         "ipv6": [
             {
-                "address": "fe80::1823:acff:fe97:ceb6%llw0",
+                "address": "fe80::88:7dff:feab:d4a1%llw0",
                 "prefix": "64",
                 "scope": "0x11"
             }
         ],
-        "macaddress": "1a:23:ac:97:ce:b6",
+        "macaddress": "02:88:7d:ab:d4:a1",
         "media": "Unknown",
         "media_select": "autoselect",
         "media_type": "none",
@@ -607,14 +560,14 @@
         "type": "loopback"
     },
     "ansible_loadavg": {
-        "15m": 3.2548828125,
-        "1m": 2.85009765625,
-        "5m": 3.30419921875
+        "15m": 3.04443359375,
+        "1m": 3.302734375,
+        "5m": 3.08203125
     },
     "ansible_local": {},
     "ansible_lsb": {},
     "ansible_machine": "arm64",
-    "ansible_memfree_mb": 2851,
+    "ansible_memfree_mb": 2804,
     "ansible_memtotal_mb": 49152,
     "ansible_model": "Mac16,8",
     "ansible_nodename": "Ryszards-MacBook-Pro.local",
@@ -665,7 +618,7 @@
     "ansible_system": "Darwin",
     "ansible_system_capabilities": "N/A",
     "ansible_system_capabilities_enforced": "N/A",
-    "ansible_uptime_seconds": 130522,
+    "ansible_uptime_seconds": 163790,
     "ansible_user_dir": "/Users/rstyczynski",
     "ansible_user_gecos": "Ryszard Styczy\u0144ski",
     "ansible_user_gid": 20,
