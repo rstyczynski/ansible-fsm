@@ -1,0 +1,177 @@
+---
+# Main tasks for state_guard role
+# This role validates that a state transition is legal according to the state machine
+
+- name: "State Guard - Initialize transition validation for {{ component }}"
+  set_fact:
+    transition_valid: false
+    transition_reason: ""
+    guard_timestamp: "{{ ansible_date_time.iso8601 }}"
+  tags:
+    - state_guard
+    - transition_validation
+
+- name: "State Guard - Validate required variables"
+  assert:
+    that:
+      - component is defined and component != ""
+      - current_state is defined and current_state != ""
+      - target_state is defined and target_state != ""
+    fail_msg: "Missing required variables: component='{{ component }}', current_state='{{ current_state }}', target_state='{{ target_state }}'"
+    success_msg: "All required variables are present"
+  tags:
+    - state_guard
+    - transition_validation
+
+- name: "State Guard - Check if component exists in state machine"
+  assert:
+    that:
+      - component in asset_definitions
+    fail_msg: "Component '{{ component }}' is not defined in state machine. Available components: {{ asset_definitions.keys() | list | join(', ') }}"
+    success_msg: "Component '{{ component }}' is defined in state machine"
+  tags:
+    - state_guard
+    - transition_validation
+
+- name: "State Guard - Check if current state is valid"
+  assert:
+    that:
+      - current_state in component_state_machine.states
+    fail_msg: "Current state '{{ current_state }}' is not valid for component '{{ component }}'. Valid states: {{ component_state_machine.states | join(', ') }}"
+    success_msg: "Current state '{{ current_state }}' is valid for component '{{ component }}'"
+  tags:
+    - state_guard
+    - transition_validation
+
+- name: "State Guard - Check if target transition is valid"
+  assert:
+    that:
+      - target_state in component_state_machine.states
+    fail_msg: "Target transition '{{ target_state }}' is not valid for component '{{ component }}'. Valid states: {{ component_state_machine.states | join(', ') }}"
+    success_msg: "Target transition '{{ target_state }}' is valid for component '{{ component }}'"
+  tags:
+    - state_guard
+    - transition_validation
+
+- name: "State Guard - Check for self-transition"
+  set_fact:
+    is_self_transition: "{{ current_state == target_state }}"
+  tags:
+    - state_guard
+    - transition_validation
+
+- name: "State Guard - Check if already in target state"
+  set_fact:
+    already_in_target_state: "{{ current_state == target_state }}"
+  tags:
+    - state_guard
+    - transition_validation
+
+- name: "State Guard - Validate self-transition"
+  assert:
+    that:
+      - not (is_self_transition and not guard_validation.allow_self_transitions and not already_in_target_state)
+    fail_msg: "Self-transition from '{{ current_state }}' to '{{ target_state }}' is not allowed"
+    success_msg: "Self-transition validation passed"
+  when: is_self_transition
+  tags:
+    - state_guard
+    - transition_validation
+
+- name: "State Guard - Get allowed transitions from current state"
+  set_fact:
+    allowed_transitions: "{{ component_state_machine.transitions[current_state].to | default([]) }}"
+  tags:
+    - state_guard
+    - transition_validation
+
+- name: "State Guard - Check if current state is transient"
+  set_fact:
+    current_is_transient: "{{ current_state in ['STARTING', 'STOPPING', 'TERMINATING'] }}"
+  tags:
+    - state_guard
+    - transition_validation
+
+- name: "State Guard - Check if target is a transient state"
+  set_fact:
+    target_is_transient: "{{ target_state in ['STARTING', 'STOPPING', 'TERMINATING'] }}"
+  tags:
+    - state_guard
+    - transition_validation
+
+- name: "State Guard - Get final state for transient target"
+  set_fact:
+    final_state_for_transient: "{{ component_state_machine.transient_mappings | dict2items | selectattr('value.transient_state', 'equalto', target_state) | map(attribute='value.success_state') | first | default(target_state) }}"
+  when: target_is_transient
+  tags:
+    - state_guard
+    - transition_validation
+
+- name: "State Guard - Set default final state for non-transient target"
+  set_fact:
+    final_state_for_transient: "{{ target_state }}"
+  when: not target_is_transient
+  tags:
+    - state_guard
+    - transition_validation
+
+
+- name: "State Guard - Check if transition is allowed or from transient state or already in target or to transient state"
+  set_fact:
+    transition_allowed: "{{ target_state in allowed_transitions or (current_is_transient and target_state in ['RUNNING', 'STOPPED', 'TERMINATED', 'FAILED']) or already_in_target_state or (target_is_transient and final_state_for_transient in allowed_transitions) }}"
+  tags:
+    - state_guard
+    - transition_validation
+
+- name: "State Guard - Validate transition is allowed"
+  assert:
+    that:
+      - transition_allowed
+    fail_msg: "Transition from '{{ current_state }}' to '{{ target_state }}' is not allowed. Allowed transitions from '{{ current_state }}': {{ allowed_transitions | join(', ') }}"
+    success_msg: "Transition from '{{ current_state }}' to '{{ target_state }}' is allowed"
+  tags:
+    - state_guard
+    - transition_validation
+
+- name: "State Guard - Execute custom guard conditions"
+  include_tasks: custom_guard_conditions.yml
+  when: custom_guard_conditions | length > 0
+  tags:
+    - state_guard
+    - custom_validation
+
+- name: "State Guard - Validate component dependencies"
+  include_tasks: component_dependencies.yml
+  when: component_dependencies | default([]) | length > 0
+  tags:
+    - state_guard
+    - dependency_validation
+
+- name: "State Guard - Set transition as valid"
+  set_fact:
+    transition_valid: true
+    transition_reason: "All guard conditions passed"
+  tags:
+    - state_guard
+    - transition_validation
+
+- name: "State Guard - Display transition validation result"
+  debug:
+    msg:
+      - "Component: {{ component }}"
+      - "Current State: {{ current_state }}"
+      - "Target Transition: {{ target_state }}"
+      - "Transition Valid: {{ transition_valid }}"
+      - "Validation Reason: {{ transition_reason }}"
+      - "Guard Timestamp: {{ guard_timestamp }}"
+  tags:
+    - state_guard
+    - transition_info
+
+- name: "State Guard - Fail if transition is not valid"
+  fail:
+    msg: "State transition validation failed: {{ transition_reason }}"
+  when: not transition_valid
+  tags:
+    - state_guard
+    - transition_validation

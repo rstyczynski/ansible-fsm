@@ -1,0 +1,39 @@
+# Asset Types Configuration
+# This file defines the mapping between asset types and their corresponding roles
+# Supports both local roles and roles from collections
+
+# Asset type definitions with role mappings
+asset_types:
+  service:
+    role_name: transition_service
+    role_collection: null  # null for local roles
+    default_timeout: 300
+  node:
+    role_name: transition_node
+    role_collection: null  # null for local roles
+    default_timeout: 300
+    disable_state_guard: true
+    disable_pre_state_guard: true    # Allow dependency start logic to run
+    disable_post_state_guard: false  # Still validate final state
+  os:
+    role_name: transition_os
+    role_collection: null  # null for local roles
+    default_timeout: 300
+    disable_pre_state_guard: false   # Validate before transition
+    disable_post_state_guard: false  # Validate after transition
+  app:
+    role_name: transition_app
+    role_collection: null  # null for local roles
+    default_timeout: 300
+    disable_pre_state_guard: false   # Validate before transition
+    disable_post_state_guard: false # Validate after transition
+
+  app_type2:
+    role_name: transition_app_type2
+    role_collection: null  # null for local roles
+    default_timeout: 300
+
+# Global asset type settings
+asset_type_config:
+  # Validation settings
+  validate_role_existence: true

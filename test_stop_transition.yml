@@ -1,0 +1,30 @@
+---
+# Test playbook to verify STOPPED state transition
+- name: Test STOPPED State Transition
+  hosts: localhost
+  gather_facts: true
+  vars:
+    component_name: "node1"
+    target_state: "STOPPED"
+    dry_run: false
+    skip_guard: true
+    skip_persist: false
+  
+  tasks:
+    - name: "Test - Display test parameters"
+      debug:
+        msg:
+          - "Testing STOPPED state transition"
+          - "Component: {{ component_name }}"
+          - "Target State: {{ target_state }}"
+          - "Dry Run: {{ dry_run }}"
+    
+    - name: "Test - Include state_change role"
+      include_role:
+        name: state_change
+      vars:
+        component_name: "{{ component_name }}"
+        target_state: "{{ target_state }}"
+        dry_run: "{{ dry_run }}"
+        skip_guard: "{{ skip_guard }}"
+        skip_persist: "{{ skip_persist }}"

@@ -1,0 +1,18 @@
+---
+galaxy_info:
+  author: Avaloq Team
+  description: "Handles automatic transient state management for state machine transitions"
+  company: "Avaloq"
+  license: "MIT"
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Linux
+      versions:
+        - all
+  galaxy_tags:
+    - state
+    - transient
+    - automation
+    - state-machine
+
+dependencies: []

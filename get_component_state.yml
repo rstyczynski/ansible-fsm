@@ -1,0 +1,38 @@
+---
+# Get Single Component State using Map-based Approach
+# This playbook demonstrates how to get the state of a specific component using the Ansible-level map
+
+- name: "Get Single Component State using Map"
+  hosts: "{{ target_hosts | default('all') }}"
+  gather_facts: true
+  become: true
+  
+  vars:
+    component: "{{ component_name | default('app_instance') }}"
+ 
+  roles:
+    - role: state_context
+      when: component_name is defined and component_name != ""
+      tags:
+        - state_context
+        - map_loading
+        - map_based
+
+- name: "Display Single Component State Information"
+  hosts: "{{ target_hosts | default('all') }}"
+  gather_facts: false
+  become: false
+  
+  tasks:
+    - name: "Load state map"
+      include_tasks: roles/state_context/tasks/load_state_map.yml
+      tags:
+        - map_loading
+
+    - name: "Get specific component state from map"
+      include_tasks: roles/state_context/tasks/map_state_operations.yml
+      vars:
+        component: "{{ component_name | default('app_instance') }}"
+      when: component_name is defined and component_name != ""
+      tags:
+        - get_component

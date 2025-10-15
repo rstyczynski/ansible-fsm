@@ -1,0 +1,14 @@
+---
+# Validate state from map
+# This task validates that the component state is valid according to the state machine
+
+- name: "Map State - Validate state from map"
+  assert:
+    that:
+      - current_state in component_state_machine.states
+    fail_msg: "State '{{ current_state }}' is not valid for component '{{ component }}'. Valid states: {{ component_state_machine.states | join(', ') }}"
+    success_msg: "State '{{ current_state }}' is valid for component '{{ component }}'"
+  when: 
+    - current_component_data.state is defined
+    - component_state_machine is defined
+    - component is defined

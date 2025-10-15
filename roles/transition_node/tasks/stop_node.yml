@@ -1,0 +1,98 @@
+---
+# Stop services for app instance transition
+# This task handles service shutdown logic for application instances
+
+- name: "Node :: Stop :: Check if services need to be stopped"
+  set_fact:
+    should_stop_node: "{{ target_state in ['STOPPING', 'STOPPED', 'TERMINATING', 'TERMINATED'] }}"
+    should_stop_services: "{{ target_state in ['STOPPING', 'STOPPED', 'TERMINATING', 'TERMINATED'] and component_services | default([]) | length > 0 }}"
+
+- name: "Node :: Stop :: Display service shutdown information"
+  debug:
+    msg:
+      - "Target State: {{ target_state }}"
+      - "Should Stop Node: {{ should_stop_node }}"
+      - "Should Stop Services: {{ should_stop_services }}"
+      - "Services to Stop: {{ component_services | default([]) | join(', ') }}"
+  when: should_stop_node
+
+
+- name: "Node :: Stop :: Display dependencies and stop logic"
+  debug:
+    msg:
+      - "Node Dependencies:"
+      - "  Processing dependency: {{ dependency }}"
+      - "  Dependency type: {{ asset_definitions[dependency].asset_type | default('unknown') }}"
+      - "  Dependency state machine: {{ asset_definitions[dependency].state_machine_spec | default('unknown') }}"
+  loop: "{{ component_dependencies | default([]) }}"
+  loop_control:
+    loop_var: dependency
+  when: 
+    - should_stop_node
+    - component_dependencies | default([]) | length > 0
+
+- name: "Node :: Stop :: Extract dependency states from global state map"
+  set_fact:
+    dependency_states: "{{ component_dependencies | map('extract', global_component_states) | map(attribute='state') | list }}"
+  when: 
+    - should_stop_node
+    - component_dependencies | default([]) | length > 0
+
+- name: "Node :: Stop :: Create dependency state mapping"
+  set_fact:
+    dependency_state_map: "{{ dict(component_dependencies | zip(dependency_states)) }}"
+  when: 
+    - should_stop_node
+    - component_dependencies | default([]) | length > 0
+
+- name: "Node :: Stop :: Display dependency states"
+  debug:
+    msg:
+      - "Dependency States: {{ dependency_state_map | default({}) }}"
+      - "Target State: {{ target_state }}"
+  when: 
+    - should_stop_node
+    - component_dependencies | default([]) | length > 0
+
+- name: "Node :: Stop :: Stop dependencies that are not STOPPED"
+  include_role:
+    name: state_change
+  vars:
+    override_component_name: "{{ item.key }}"
+    target_state: "STOPPED"
+    skip_guard: false
+  loop: "{{ dependency_state_map | dict2items }}"
+  when: 
+    - should_stop_node
+    - component_dependencies | default([]) | length > 0
+    - item.value not in ['STOPPED', 'TERMINATED']
+  register: dependency_stop_results
+
+- name: "Node :: Stop :: Wait for dependencies to be STOPPED"
+  include_role:
+    name: state_context
+  vars:
+    component_name: "{{ item }}"
+    asset_type: "{{ asset_definitions[item].asset_type | default('app') }}"
+  loop: "{{ component_dependencies | default([]) }}"
+  loop_control:
+    loop_var: dependency
+  when: 
+    - should_stop_node
+    - component_dependencies | default([]) | length > 0
+
+- name: "Node :: Stop :: Validate all dependencies are STOPPED"
+  assert:
+    that:
+      - item.value in ['STOPPED', 'TERMINATED']
+    fail_msg: "Dependency '{{ item.key }}' is not in STOPPED state (current: {{ item.value }})"
+    success_msg: "Dependency '{{ item.key }}' is in STOPPED state"
+  loop: "{{ dependency_state_map | dict2items }}"
+  when: 
+    - should_stop_node
+    - component_dependencies | default([]) | length > 0
+
+- name: "Node :: Stop :: Record successful service shutdown"
+  set_fact:
+    transition_actions_executed: "{{ transition_actions_executed | default([]) + ['services_stopped'] }}"
+  when: should_stop_node

@@ -1,0 +1,52 @@
+---
+# Test playbook for variable isolation solutions
+# This demonstrates different approaches to solving the variable contamination issue
+
+- name: "Test Variable Isolation Solutions"
+  hosts: localhost
+  gather_facts: true
+
+  tasks:
+    - name: "Test 1: Current problematic approach (include_role)"
+      debug:
+        msg: "This would show the variable contamination issue"
+      tags:
+        - test_current
+
+    - name: "Test 2: Namespaced state_persist approach"
+      include_role:
+        name: state_persist
+        tasks_from: main_namespaced
+      vars:
+        component: "test_component"
+        new_state: "RUNNING"
+        asset_type: "app"
+      tags:
+        - test_namespaced
+
+    - name: "Test 3: Import role approach for recursive calls"
+      import_role:
+        name: state_change
+      vars:
+        component_name: "app1"
+        target_state: "RUNNING"
+      tags:
+        - test_import_role
+
+    - name: "Test 4: Isolated state_change wrapper"
+      include_role:
+        name: state_change_isolated
+      vars:
+        component_name: "app1"
+        target_state: "RUNNING"
+      tags:
+        - test_isolated
+
+    - name: "Test 5: Show final states after isolation"
+      debug:
+        msg:
+          - "Final component states:"
+          - "  app1: {{ ansible_facts.component_state | default('unknown') }}"
+          - "  os_instance1: {{ ansible_facts.component_state | default('unknown') }}"
+      tags:
+        - test_final

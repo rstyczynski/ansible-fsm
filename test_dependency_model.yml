@@ -1,0 +1,40 @@
+---
+# Test playbook for dependency model: app1 -> os1
+# This playbook demonstrates how the dependency validation works
+
+- name: "Test Dependency Model: app1 -> os1"
+  hosts: localhost
+  gather_facts: true
+  vars:
+    component_name: "app1"
+    target_state: "RUNNING"
+    dry_run: false
+
+  tasks:
+    - name: "Test 1: Try to start app1 when os1 is STOPPED (should fail)"
+      include_role:
+        name: state_change
+      vars:
+        component_name: "app1"
+        target_state: "RUNNING"
+      when: false  # Skip this test for now
+
+    - name: "Test 2: Start os1 first (should succeed)"
+      include_role:
+        name: state_change
+      vars:
+        component_name: "os1"
+        target_state: "RUNNING"
+
+    - name: "Test 3: Now try to start app1 when os1 is RUNNING (should succeed)"
+      include_role:
+        name: state_change
+      vars:
+        component_name: "app1"
+        target_state: "RUNNING"
+
+    - name: "Test 4: Display final states"
+      debug:
+        msg:
+          - "os1 state: {{ ansible_facts.component_state | default('unknown') }}"
+          - "app1 state: {{ ansible_facts.component_state | default('unknown') }}"

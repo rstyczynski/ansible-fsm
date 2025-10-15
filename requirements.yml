@@ -1,0 +1,36 @@
+---
+# Ansible Collection Requirements
+# This file specifies the required Ansible collections for the state-driven playbook framework
+
+# Core Ansible collections
+collections:
+  - name: ansible.posix
+    version: ">=1.5.0"
+  
+  - name: community.general
+    version: ">=7.0.0"
+  
+  - name: community.systemd
+    version: ">=1.0.0"
+
+# Optional collections for enhanced functionality
+  - name: community.docker
+    version: ">=3.0.0"
+    # Uncomment if using Docker containers
+  
+  - name: kubernetes.core
+    version: ">=2.4.0"
+    # Uncomment if using Kubernetes resources
+  
+  - name: community.mysql
+    version: ">=3.0.0"
+    # Uncomment if using MySQL databases
+  
+  - name: community.postgresql
+    version: ">=3.0.0"
+    # Uncomment if using PostgreSQL databases
+
+# Local collections (if any)
+# - name: local.state_machine
+#   source: ./collections/state_machine
+#   type: dir
