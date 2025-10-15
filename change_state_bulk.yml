@@ -1,21 +1,29 @@
 ---
-# Simple State Change Playbook
-# This playbook uses the generic state_change role to change component states
+# Simple Bulk State Change Playbook
+# This playbook changes the state of multiple components using sequential operations
 # 
 # Usage:
-#   ansible-playbook change_component_state.yml -e component=my_component -e transition=RUNNING
-#   ansible-playbook change_component_state.yml --tags state_context
-#   ansible-playbook change_component_state.yml --tags transition_to_RUNNING
+#   ansible-playbook change_components_state.yml -e components="node1,app1" -e state=RUNNING
+#   ansible-playbook change_components_state.yml -e components="all" -e state=STOPPED
 
-- name: "Change Component State"
+- name: "Change Components State"
   hosts: "{{ target_hosts | default('all') }}"
   gather_facts: true
   become: true
+  serial: 1
   
   vars:
-    component_name: "{{ component | default('resource') }}"
-    target_state: "{{ state | default('') }}"
-    skip_guard: false
+    components_list: "{{ (components | default('all')).split(',') | map('trim') | list }}"
+    state_target: "{{ state | default('') }}"
+    guard_skip: false
+    
+  tasks:
+    - name: "Change state for component {{ item }}"
+      ansible.builtin.include_role:
+        name: state_change
+      vars:
+        component_name: "{{ item }}"
+        target_state: "{{ state_target }}"
+        skip_guard: "{{ guard_skip }}"
+      loop: "{{ components_list }}"
 
-  roles:
-    - role: state_change

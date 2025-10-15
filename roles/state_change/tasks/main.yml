@@ -2,6 +2,12 @@
 # Main tasks for state_change role
 # This role implements state-driven transitions for components using the state machine framework
 
+- name: "State Change: Variables"
+  ansible.builtin.debug:
+    msg: "component_name: {{ component_name }}"
+  tags:
+    - always
+    - variable_isolation
 
 - name: "State Change: Initialize computed variables with isolation"
   ansible.builtin.set_fact:

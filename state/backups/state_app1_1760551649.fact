@@ -5,12 +5,12 @@ ansible_version:
     revision: 7
     string: 2.18.7
 component: app1
-component_state: STOPPING
+component_state: STARTING
 component_state_method: state_persist
-component_state_previous: RUNNING
-component_state_timestamp: '2025-10-15T18:18:07Z'
-component_state_transition: RUNNING -> STOPPING
+component_state_previous: STOPPED
+component_state_timestamp: '2025-10-15T18:30:22Z'
+component_state_transition: STOPPED -> STARTING
 component_state_valid: true
 hostname: Ryszards-MacBook-Pro
-playbook_name: Change Component State
+playbook_name: Change Components State
 user_id: rstyczynski
