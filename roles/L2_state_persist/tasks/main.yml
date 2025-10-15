@@ -1,0 +1,198 @@
+---
+# Main tasks for L2_state_persist role
+# This role persists component state to fact files for auditability and state tracking
+# All variables are prefixed with L2_ to avoid namespace conflicts
+
+- name: "L2 State Persist - Get current timestamp"
+  ansible.builtin.command: date -u +"%Y-%m-%dT%H:%M:%SZ"
+  register: L2_current_timestamp
+  changed_when: false
+
+- name: "L2 State Persist - Initialize state persistence for {{ L2_component }}"
+  set_fact:
+    L2_persistence_timestamp: '{{ L2_current_timestamp.stdout }}'
+    L2_persistence_success: false
+  tags:
+    - L2_state_persist
+    - L2_state_persistence
+
+- name: "L2 State Persist - Validate required variables"
+  assert:
+    that:
+      - L2_component is defined and L2_component != ""
+      - L2_new_state is defined and L2_new_state != ""
+    fail_msg: "Missing required variables: L2_component='{{ L2_component }}', L2_new_state='{{ L2_new_state }}'"
+    success_msg: "All required variables are present"
+  tags:
+    - L2_state_persist
+    - L2_state_persistence
+
+- name: "L2 State Persist - Validate new state is valid"
+  assert:
+    that:
+      - L2_new_state in L2_state_machine_data.states
+    fail_msg: "New state '{{ L2_new_state }}' is not valid for component '{{ L2_component }}'. Valid states: {{ L2_state_machine_data.states | join(', ') }}"
+    success_msg: "New state '{{ L2_new_state }}' is valid for component '{{ L2_component }}'"
+  when: L2_persistence_settings.validate_state
+  tags:
+    - L2_state_machine_config
+    - L2_state_persistence
+
+- name: "L2 State Persist - Create backup directory"
+  file:
+    path: "{{ L2_backup_directory }}"
+    state: directory
+    mode: '0755'
+  when: L2_backup_enabled and L2_persistence_settings.create_backup
+  tags:
+    - L2_state_persist
+    - L2_backup
+
+- name: "L2 State Persist - Check if current fact file exists"
+  stat:
+    path: "{{ L2_state_fact_file }}"
+  register: L2_current_fact_file_stat
+  tags:
+    - L2_state_persist
+    - L2_backup
+
+- name: "L2 State Persist - Create backup of current fact file"
+  copy:
+    src: "{{ L2_state_fact_file }}"
+    dest: "{{ L2_backup_directory }}/state_{{ L2_component }}_{{ ansible_date_time.epoch }}.fact"
+    remote_src: true
+    mode: '0644'
+  when: 
+    - L2_backup_enabled
+    - L2_persistence_settings.create_backup
+    - L2_current_fact_file_stat.stat.exists
+  tags:
+    - L2_state_persist
+    - L2_backup
+
+- name: "L2 State Persist - Clean up old backups"
+  find:
+    paths: "{{ L2_backup_directory }}"
+    patterns: "state_{{ L2_component }}_*.fact"
+    age: "{{ L2_backup_retention_days }}d"
+  register: L2_old_backups
+  when: L2_backup_enabled
+  tags:
+    - L2_state_persist
+    - L2_backup
+
+- name: "L2 State Persist - Remove old backup files"
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ L2_old_backups.files }}"
+  when: L2_backup_enabled and L2_old_backups.files | length > 0
+  tags:
+    - L2_state_persist
+    - L2_backup
+
+- name: "L2 State Persist - Prepare state fact content"
+  set_fact:
+    L2_state_fact_content:
+      component: "{{ L2_component }}"
+      component_state: "{{ L2_new_state }}"
+      component_state_timestamp: "{{ L2_current_timestamp.stdout }}"
+      component_state_method: "L2_state_persist"
+      component_state_valid: true
+      component_state_previous: "{{ L2_current_state | default('') }}"
+      component_state_transition: "{{ L2_current_state | default('initial') }} -> {{ L2_new_state }}"
+  tags:
+    - L2_state_persist
+    - L2_state_persistence
+
+- name: "L2 State Persist - Add metadata to fact content"
+  set_fact:
+    L2_state_fact_content: "{{ L2_state_fact_content | combine(L2_component_metadata) }}"
+  vars:
+    L2_component_metadata:
+      hostname: "{{ ansible_hostname }}"
+      playbook_name: "{{ ansible_play_name }}"
+      user_id: "{{ ansible_user_id }}"
+      ansible_version: "{{ ansible_version }}"
+  when: L2_persistence_settings.include_metadata
+  tags:
+    - L2_state_persist
+    - L2_state_persistence
+
+- name: "L2 State Persist - Create state fact file"
+  copy:
+    content: "{{ L2_state_fact_content | to_nice_yaml }}"
+    dest: "{{ L2_state_fact_file }}"
+    mode: '0644'
+    backup: false
+  tags:
+    - L2_state_persist
+    - L2_state_persistence
+
+- name: "L2 State Persist - Verify fact file was created"
+  stat:
+    path: "{{ L2_state_fact_file }}"
+  register: L2_fact_file_created
+  tags:
+    - L2_state_persist
+    - L2_state_persistence
+
+- name: "L2 State Persist - Validate fact file content"
+  include_vars:
+    file: "{{ L2_state_fact_file }}"
+  tags:
+    - L2_state_persist
+    - L2_state_persistence
+
+- name: "L2 State Persist - Verify persisted state"
+  assert:
+    that:
+      - L2_state_fact_content.component_state == L2_new_state
+      - L2_state_fact_content.component_state_timestamp == L2_persistence_timestamp
+      - L2_state_fact_content.component_state_valid == true
+    fail_msg: "State persistence verification failed. Expected: {{ L2_new_state }}, Got: {{ L2_state_fact_content.component_state }}"
+    success_msg: "State persistence verification successful"
+  when: not ansible_check_mode
+  tags:
+    - L2_state_persist
+    - L2_state_persistence
+
+- name: "L2 State Persist - Set persistence success"
+  set_fact:
+    L2_persistence_success: true
+  tags:
+    - L2_state_persist
+    - L2_state_persistence
+
+- name: "L2 State Persist - Update component state facts"
+  set_fact:
+    L2_component_state: "{{ L2_new_state }}"
+    L2_component_state_timestamp: "{{ L2_persistence_timestamp }}"
+    L2_component_state_method: "L2_state_persist"
+    L2_component_state_valid: true
+    L2_component_state_previous: "{{ L2_component_state_previous | default('') }}"
+    L2_component_state_transition: "{{ L2_component_state_transition | default('') }}"
+  tags:
+    - L2_state_persist
+    - L2_state_facts
+
+- name: "L2 State Persist - Display persistence result"
+  debug:
+    msg:
+      - "Component: {{ L2_component }}"
+      - "New State: {{ L2_new_state }}"
+      - "Previous State: {{ L2_component_state_previous | default('none') }}"
+      - "Persistence Timestamp: {{ L2_persistence_timestamp }}"
+      - "Fact File: {{ L2_state_fact_file }}"
+      - "Persistence Success: {{ L2_persistence_success }}"
+  tags:
+    - L2_state_persist
+    - L2_state_info
+
+- name: "L2 State Persist - Fail if persistence failed"
+  fail:
+    msg: "State persistence failed for component '{{ L2_component }}'"
+  when: not L2_persistence_success
+  tags:
+    - L2_state_persist
+    - L2_state_persistence

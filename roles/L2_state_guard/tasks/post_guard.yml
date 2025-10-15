@@ -1,0 +1,193 @@
+---
+# POST L2 State Guard - Final state validation after asset transition
+# This guard validates that the transition succeeded and all dependencies are in correct state
+# It ensures the final state is consistent and all dependency chains are valid
+
+- name: "POST L2 State Guard - Initialize post-transition validation for {{ L2_component }}"
+  set_fact:
+    L2_post_guard_transition_valid: false
+    L2_post_guard_transition_reason: ""
+    L2_post_guard_timestamp: "{{ ansible_date_time.iso8601 }}"
+  tags:
+    - L2_post_state_guard
+    - L2_transition_validation
+
+- name: "POST L2 State Guard - Validate required variables"
+  assert:
+    that:
+      - L2_component is defined and L2_component != ""
+      - L2_current_state is defined and L2_current_state != ""
+      - L2_target_state is defined and L2_target_state != ""
+    fail_msg: "Missing required variables: L2_component='{{ L2_component }}', L2_current_state='{{ L2_current_state }}', L2_target_state='{{ L2_target_state }}'"
+    success_msg: "All required variables are present"
+  tags:
+    - L2_post_state_guard
+    - L2_transition_validation
+
+- name: "POST L2 State Guard - Check if component exists in state machine"
+  assert:
+    that:
+      - L2_component in asset_definitions
+    fail_msg: "Component '{{ L2_component }}' is not defined in state machine. Available components: {{ asset_definitions.keys() | list | join(', ') }}"
+    success_msg: "Component '{{ L2_component }}' is defined in state machine"
+  tags:
+    - L2_post_state_guard
+    - L2_transition_validation
+
+- name: "POST L2 State Guard - Validate component reached target state"
+  assert:
+    that:
+      - L2_current_state == L2_target_state
+    fail_msg: "Component '{{ L2_component }}' did not reach target state '{{ L2_target_state }}'. Current state: '{{ L2_current_state }}'"
+    success_msg: "Component '{{ L2_component }}' successfully reached target state '{{ L2_target_state }}'"
+  tags:
+    - L2_post_state_guard
+    - L2_transition_validation
+
+- name: "POST L2 State Guard - Check if component has dependencies"
+  set_fact:
+    L2_post_guard_has_dependencies: "{{ L2_component_dependencies | default([]) | length > 0 }}"
+  tags:
+    - L2_post_state_guard
+    - L2_dependency_validation
+
+- name: "POST L2 State Guard - Check if dependency validation is required"
+  set_fact:
+    L2_post_guard_dependency_validation_required: "{{ L2_post_guard_has_dependencies and L2_target_state in ['STARTING', 'RUNNING'] }}"
+  tags:
+    - L2_post_state_guard
+    - L2_dependency_validation
+
+- name: "POST L2 State Guard - Display dependency information"
+  debug:
+    msg:
+      - "Component: {{ L2_component }}"
+      - "Has Dependencies: {{ L2_post_guard_has_dependencies }}"
+      - "Dependencies: {{ L2_component_dependencies | default([]) | join(', ') }}"
+      - "POST Dependency Validation Required: {{ L2_post_guard_dependency_validation_required }}"
+  when: L2_post_guard_has_dependencies
+  tags:
+    - L2_post_state_guard
+    - L2_dependency_validation
+
+- name: "POST L2 State Guard - Extract dependency states from global state map"
+  set_fact:
+    L2_post_guard_dependency_states: "{{ L2_component_dependencies | map('extract', global_component_states) | map(attribute='state') | list }}"
+    L2_post_guard_dependency_components: "{{ L2_component_dependencies | default([]) }}"
+  when: L2_post_guard_dependency_validation_required
+  tags:
+    - L2_post_state_guard
+    - L2_dependency_validation
+
+- name: "POST L2 State Guard - Create dependency state mapping"
+  set_fact:
+    L2_post_guard_dependency_state_map: "{{ dict(L2_post_guard_dependency_components | zip(L2_post_guard_dependency_states)) }}"
+  when: L2_post_guard_dependency_validation_required
+  tags:
+    - L2_post_state_guard
+    - L2_dependency_validation
+
+- name: "POST L2 State Guard - Display dependency states"
+  debug:
+    msg:
+      - "Dependency States: {{ L2_post_guard_dependency_state_map | default({}) }}"
+      - "Target State: {{ L2_target_state }}"
+  when: L2_post_guard_dependency_validation_required
+  tags:
+    - L2_post_state_guard
+    - L2_dependency_validation
+
+- name: "POST L2 State Guard - Validate dependency states for STARTING transition"
+  assert:
+    that:
+      - item.value in ['RUNNING']
+    fail_msg: "Dependency '{{ item.key }}' must be in RUNNING state for {{ L2_component }} to be in {{ L2_target_state }}. Current state: {{ item.value }}"
+    success_msg: "Dependency '{{ item.key }}' is in correct state: {{ item.value }}"
+  loop: "{{ L2_post_guard_dependency_state_map | dict2items }}"
+  when: 
+    - L2_post_guard_dependency_validation_required
+    - L2_target_state in ['STARTING']
+  tags:
+    - L2_post_state_guard
+    - L2_dependency_validation
+
+- name: "POST L2 State Guard - Validate dependency states for RUNNING transition"
+  assert:
+    that:
+      - item.value in ['RUNNING']
+    fail_msg: "Dependency '{{ item.key }}' must be in RUNNING state for {{ L2_component }} to be in {{ L2_target_state }}. Current state: {{ item.value }}"
+    success_msg: "Dependency '{{ item.key }}' is in correct state: {{ item.value }}"
+  loop: "{{ L2_post_guard_dependency_state_map | dict2items }}"
+  when: 
+    - L2_post_guard_dependency_validation_required
+    - L2_target_state in ['RUNNING']
+  tags:
+    - L2_post_state_guard
+    - L2_dependency_validation
+
+- name: "POST L2 State Guard - Record successful dependency validation"
+  set_fact:
+    L2_post_guard_dependency_validation_success: true
+    L2_post_guard_dependency_validation_message: "All dependencies validated successfully"
+  when: L2_post_guard_dependency_validation_required
+  tags:
+    - L2_post_state_guard
+    - L2_dependency_validation
+
+- name: "POST L2 State Guard - Set dependency validation as not required"
+  set_fact:
+    L2_post_guard_dependency_validation_success: true
+    L2_post_guard_dependency_validation_message: "No dependency validation required"
+  when: not L2_post_guard_dependency_validation_required
+  tags:
+    - L2_post_state_guard
+    - L2_dependency_validation
+
+- name: "POST L2 State Guard - Display dependency validation result"
+  debug:
+    msg:
+      - "Component: {{ L2_component }}"
+      - "POST Dependency Validation Success: {{ L2_post_guard_dependency_validation_success | default(false) }}"
+      - "POST Dependency Validation Message: {{ L2_post_guard_dependency_validation_message | default('Not performed') }}"
+  tags:
+    - L2_post_state_guard
+    - L2_dependency_validation
+
+- name: "POST L2 State Guard - Fail if dependency validation failed"
+  fail:
+    msg: "POST dependency validation failed: {{ L2_post_guard_dependency_validation_message | default('Unknown error') }}"
+  when: 
+    - L2_post_guard_dependency_validation_required
+    - not (L2_post_guard_dependency_validation_success | default(false))
+  tags:
+    - L2_post_state_guard
+    - L2_dependency_validation
+
+- name: "POST L2 State Guard - Set transition as valid"
+  set_fact:
+    L2_post_guard_transition_valid: true
+    L2_post_guard_transition_reason: "All POST guard conditions passed"
+  tags:
+    - L2_post_state_guard
+    - L2_transition_validation
+
+- name: "POST L2 State Guard - Display final validation result"
+  debug:
+    msg:
+      - "Component: {{ L2_component }}"
+      - "Current State: {{ L2_current_state }}"
+      - "Target State: {{ L2_target_state }}"
+      - "POST Guard Valid: {{ L2_post_guard_transition_valid }}"
+      - "POST Guard Reason: {{ L2_post_guard_transition_reason }}"
+      - "POST Guard Timestamp: {{ L2_post_guard_timestamp }}"
+  tags:
+    - L2_post_state_guard
+    - L2_transition_info
+
+- name: "POST L2 State Guard - Fail if transition is not valid"
+  fail:
+    msg: "POST State transition validation failed: {{ L2_post_guard_transition_reason }}"
+  when: not L2_post_guard_transition_valid
+  tags:
+    - L2_post_state_guard
+    - L2_transition_validation

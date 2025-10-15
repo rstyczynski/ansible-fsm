@@ -93,6 +93,7 @@ state_machines:
 
 # Global state machine settings
 state_machine:
-  fact_file_path: "./state/state_COMPONENT_PLACEHOLDER.fact"
+  fact_file_path: "./state/state_{{ component_name }}.fact"
   backup_enabled: true
+  backup_directory: "./state/backups"
   validation_strict: true

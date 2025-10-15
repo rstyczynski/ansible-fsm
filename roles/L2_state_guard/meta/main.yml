@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: AI Aider
+  description: Role for validating legal state transitions (L2 prefixed)
+  company: Avaloq
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: RHEL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - state
+    - guard
+    - validation
+    - L2
+
+dependencies: []

@@ -1,0 +1,135 @@
+---
+# Component dependency validation for L2_state_guard role
+# This file handles validation of component dependencies before state transitions
+
+- name: "L2 State Guard - Check if component has dependencies"
+  set_fact:
+    L2_has_component_dependencies: "{{ L2_component_dependencies | default([]) | length > 0 }}"
+  tags:
+    - L2_state_guard
+    - L2_dependency_validation
+
+- name: "L2 State Guard - Check if dependency validation is required"
+  set_fact:
+    L2_dependency_validation_required: "{{ L2_has_component_dependencies and L2_target_state in ['STARTING', 'RUNNING'] }}"
+  tags:
+    - L2_state_guard
+    - L2_dependency_validation
+
+- name: "L2 State Guard - Display dependency information"
+  debug:
+    msg:
+      - "Component: {{ L2_component }}"
+      - "Has Dependencies: {{ L2_has_component_dependencies }}"
+      - "Dependencies: {{ L2_component_dependencies | default([]) | join(', ') }}"
+      - "Dependency Validation Required: {{ L2_dependency_validation_required }}"
+  when: L2_has_component_dependencies
+  tags:
+    - L2_state_guard
+    - L2_dependency_validation
+
+- name: "L2 State Guard - Read dependency component states"
+  include_role:
+    name: state_context
+  vars:
+    component_name: "{{ item }}"
+    asset_type: "{{ asset_definitions[item].asset_type | default('app') }}"
+  loop: "{{ L2_component_dependencies | default([]) }}"
+  when: L2_dependency_validation_required
+  register: L2_dependency_state_results
+  tags:
+    - L2_state_guard
+    - L2_dependency_validation
+
+- name: "L2 State Guard - Extract dependency states from global state map"
+  set_fact:
+    L2_dependency_states: "{{ L2_component_dependencies | map('extract', global_component_states) | map(attribute='state') | list }}"
+    L2_dependency_components: "{{ L2_component_dependencies | default([]) }}"
+  when: L2_dependency_validation_required
+  tags:
+    - L2_state_guard
+    - L2_dependency_validation
+
+- name: "L2 State Guard - Create dependency state mapping"
+  set_fact:
+    L2_dependency_state_map: "{{ dict(L2_dependency_components | zip(L2_dependency_states)) }}"
+  when: L2_dependency_validation_required
+  tags:
+    - L2_state_guard
+    - L2_dependency_validation
+
+- name: "L2 State Guard - Display dependency states"
+  debug:
+    msg:
+      - "Dependency States: {{ L2_dependency_state_map | default({}) }}"
+      - "Target State: {{ L2_target_state }}"
+  when: L2_dependency_validation_required
+  tags:
+    - L2_state_guard
+    - L2_dependency_validation
+
+- name: "L2 State Guard - Validate dependency states for STARTING transition"
+  assert:
+    that:
+      - item.value in ['RUNNING']
+    fail_msg: "Dependency '{{ item.key }}' must be in RUNNING state for {{ L2_component }} to transition to {{ L2_target_state }}. Current state: {{ item.value }}"
+    success_msg: "Dependency '{{ item.key }}' is in correct state: {{ item.value }}"
+  loop: "{{ L2_dependency_state_map | dict2items }}"
+  when: 
+    - L2_dependency_validation_required
+    - L2_target_state in ['STARTING']
+  tags:
+    - L2_state_guard
+    - L2_dependency_validation
+
+- name: "L2 State Guard - Validate dependency states for RUNNING transition"
+  assert:
+    that:
+      - item.value in ['RUNNING']
+    fail_msg: "Dependency '{{ item.key }}' must be in RUNNING state for {{ L2_component }} to transition to {{ L2_target_state }}. Current state: {{ item.value }}"
+    success_msg: "Dependency '{{ item.key }}' is in correct state: {{ item.value }}"
+  loop: "{{ L2_dependency_state_map | dict2items }}"
+  when: 
+    - L2_dependency_validation_required
+    - L2_target_state in ['RUNNING']
+  tags:
+    - L2_state_guard
+    - L2_dependency_validation
+
+- name: "L2 State Guard - Record successful dependency validation"
+  set_fact:
+    L2_dependency_validation_success: true
+    L2_dependency_validation_message: "All dependencies validated successfully"
+  when: L2_dependency_validation_required
+  tags:
+    - L2_state_guard
+    - L2_dependency_validation
+
+- name: "L2 State Guard - Set dependency validation as not required"
+  set_fact:
+    L2_dependency_validation_success: true
+    L2_dependency_validation_message: "No dependency validation required"
+  when: not L2_dependency_validation_required
+  tags:
+    - L2_state_guard
+    - L2_dependency_validation
+
+- name: "L2 State Guard - Display dependency validation result"
+  debug:
+    msg:
+      - "Component: {{ L2_component }}"
+      - "Dependency Validation Success: {{ L2_dependency_validation_success | default(false) }}"
+      - "Dependency Validation Message: {{ L2_dependency_validation_message | default('Not performed') }}"
+  tags:
+    - L2_state_guard
+    - L2_dependency_validation
+
+- name: "L2 State Guard - Fail if dependency validation failed"
+  fail:
+    msg: "Dependency validation failed: {{ L2_dependency_validation_message | default('Unknown error') }}"
+  when: 
+    - L2_dependency_validation_required
+    - not (L2_dependency_validation_success | default(false))
+  tags:
+    - L2_state_guard
+    - L2_dependency_validation

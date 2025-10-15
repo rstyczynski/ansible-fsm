@@ -1,0 +1,25 @@
+---
+galaxy_info:
+  author: AI Aider
+  description: L2 namespaced role for state-driven component transitions using the state machine framework
+  company: Avaloq
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: RHEL
+      versions:
+        - "8"
+        - "9"
+  galaxy_tags:
+    - state
+    - transition
+    - component
+    - lifecycle
+    - L2
+    - namespaced
+
+dependencies: []
