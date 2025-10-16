@@ -1,16 +1,19 @@
 #!/bin/bash
 
-set -e
+# Source the test framework
+source ./bin/test_helper.sh
 
-ansible-playbook change_state.yml -e component_name="app1" -e state=RUNNING
-ansible-playbook change_state.yml -e component_name="node1" -e state=RUNNING
+echo "app1: Remove state"
+mv ./state/state_app1.fact ./state/state_app1.fact.bak
 
-ansible-playbook change_state.yml -e component_name="node1" -e state=STOPPED
-ansible-playbook change_state.yml -e component_name="app1" -e state=STOPPED
+# Run tests
+run_test "app1: Start app1" "ansible-playbook change_state.yml -e component_name=app1 -e state=RUNNING"
+run_negative_test "app1: Move to STARTING state (transitive)" "ansible-playbook change_state.yml -e component_name=app1 -e state=STARTING"
+run_negative_test "app1: Terminate" "ansible-playbook change_state.yml -e component_name=app1 -e state=TERMINATED"
 
-ansible-playbook change_state_bulk.yml -e components="app1,node1" -e state=RUNNING
-ansible-playbook change_state_bulk.yml -e components="app1,node1" -e state=STOPPED
+run_test "app1: Stop" "ansible-playbook change_state.yml -e component_name=app1 -e state=STOPPED"
+run_test "app1: Terminate" "ansible-playbook change_state.yml -e component_name=app1 -e state=TERMINATED"
+run_negative_test "app1: Start app1" "ansible-playbook change_state.yml -e component_name=app1 -e state=RUNNING"
 
-ansible-playbook node1_stop.yml
-ansible-playbook node1_start.yml
-
+echo "app1: Restore state"
+mv ./state/state_app1.fact.bak ./state/state_app1.fact
