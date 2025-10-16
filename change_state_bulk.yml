@@ -20,7 +20,7 @@
   tasks:
     - name: "Change state for component {{ item }}"
       ansible.builtin.include_role:
-        name: state_change
+        name: toolchain.fsm.state_change
       vars:
         component_name: "{{ item }}"
         target_state: "{{ state_target }}"

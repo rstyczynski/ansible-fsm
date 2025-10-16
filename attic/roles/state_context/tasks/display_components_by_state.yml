@@ -1,0 +1,12 @@
+---
+# Display components by state
+# This task displays components filtered by their current state
+
+- name: "Map State - Display components by state"
+  debug:
+    msg:
+      - "=== Components in State: {{ state_filter }} ==="
+      - "{{ components_by_state | to_nice_yaml }}"
+  when: 
+    - components_by_state is defined
+    - state_filter is defined

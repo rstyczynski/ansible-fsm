@@ -1,0 +1,146 @@
+---
+# Main tasks for state_transient role
+# This role handles automatic transient state management
+
+- name: "State Transient - Validate required variables"
+  assert:
+    that:
+      - component is defined and component != ""
+      - target_state is defined and target_state != ""
+      - current_state is defined and current_state != ""
+    fail_msg: "Missing required variables: component='{{ component }}', target_state='{{ target_state }}', current_state='{{ current_state }}'"
+    success_msg: "All required variables are present"
+  tags:
+    - state_transient
+    - transient_handling
+
+- name: "State Transient - Initialize transient state handling for {{ component }}"
+  set_fact:
+    transient_handling_timestamp: "{{ ansible_date_time.iso8601 }}"
+    transient_handling_success: false
+    actual_target_state: "{{ target_state }}"
+    transient_state: ""
+  tags:
+    - state_transient
+    - transient_handling
+
+- name: "State Transient - Check if target state has transient mapping"
+  set_fact:
+    has_transient_mapping: "{{ target_state in component_state_machine.transient_mappings }}"
+    transient_mapping: "{{ component_state_machine.transient_mappings[target_state] | default({}) }}"
+  tags:
+    - state_transient
+    - transient_handling
+
+- name: "State Transient - Check if current state is already a transient state"
+  set_fact:
+    current_is_transient: "{{ current_state in ['STARTING', 'STOPPING', 'TERMINATING'] }}"
+  tags:
+    - state_transient
+    - transient_handling
+
+- name: "State Transient - Handle transition from transient state to different final state"
+  set_fact:
+    actual_target_state: "{{ target_state }}"
+    transient_state: ""
+    transient_success_state: ""
+    transient_failure_state: ""
+    transient_timeout: ""
+    skip_transient_mapping: false
+  when: 
+    - current_is_transient
+    - target_state != current_state
+  tags:
+    - state_transient
+    - transient_handling
+
+- name: "State Transient - Check if already in target final state"
+  set_fact:
+    already_in_target_state: "{{ current_state == target_state }}"
+  tags:
+    - state_transient
+    - transient_handling
+
+- name: "State Transient - Handle case where already in target state"
+  set_fact:
+    actual_target_state: "{{ target_state }}"
+    transient_state: ""
+    transient_success_state: ""
+    transient_failure_state: ""
+    transient_timeout: ""
+    skip_transient_mapping: true
+  when: 
+    - has_transient_mapping
+    - not (skip_transient_mapping | default(false))
+    - already_in_target_state
+  tags:
+    - state_transient
+    - transient_handling
+
+- name: "State Transient - Set transient state if mapping exists and not skipping"
+  set_fact:
+    actual_target_state: "{{ transient_mapping.transient_state }}"
+    transient_state: "{{ transient_mapping.transient_state }}"
+    transient_success_state: "{{ transient_mapping.success_state }}"
+    transient_failure_state: "{{ transient_mapping.failure_state }}"
+    transient_timeout: "{{ transient_mapping.timeout | default(300) }}"
+    skip_transient_mapping: false
+  when: 
+    - has_transient_mapping
+    - not (skip_transient_mapping | default(false))
+    - not already_in_target_state
+  tags:
+    - state_transient
+    - transient_handling
+
+- name: "State Transient - Handle case where no transient mapping needed"
+  set_fact:
+    actual_target_state: "{{ target_state }}"
+    transient_state: ""
+    transient_success_state: ""
+    transient_failure_state: ""
+    transient_timeout: ""
+    skip_transient_mapping: false
+  when: 
+    - not has_transient_mapping
+    - not (skip_transient_mapping | default(false))
+  tags:
+    - state_transient
+    - transient_handling
+
+- name: "State Transient - Display transient handling decision"
+  debug:
+    msg:
+      - "Component: {{ component }}"
+      - "Current State: {{ current_state }}"
+      - "Original Target: {{ target_state }}"
+      - "Actual Target: {{ actual_target_state }}"
+      - "Current is Transient: {{ current_is_transient }}"
+      - "Skip Transient Mapping: {{ skip_transient_mapping | default(false) }}"
+      - "Transient State: {{ transient_state | default('none') }}"
+      - "Success State: {{ transient_success_state | default('none') }}"
+      - "Failure State: {{ transient_failure_state | default('none') }}"
+      - "Timeout: {{ transient_timeout | default('none') }} seconds"
+      - "Has Transient Mapping: {{ has_transient_mapping }}"
+      - "Already in Target State: {{ already_in_target_state }}"
+  tags:
+    - state_transient
+    - transient_info
+
+- name: "State Transient - Set transient handling success"
+  set_fact:
+    transient_handling_success: true
+  tags:
+    - state_transient
+    - transient_handling
+
+- name: "State Transient - Display transient handling result"
+  debug:
+    msg:
+      - "Component: {{ component }}"
+      - "Transient Handling: {{ 'enabled' if transient_state != '' else 'disabled' }}"
+      - "Final Target State: {{ actual_target_state }}"
+      - "Handling Success: {{ transient_handling_success }}"
+  tags:
+    - state_transient
+    - transient_info

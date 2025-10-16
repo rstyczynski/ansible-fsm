@@ -1,0 +1,89 @@
+---
+# Verify health for app type2 transition
+# This task handles health verification logic for application type2 instances
+
+- name: "Verify Health - Check if health verification is needed"
+  set_fact:
+    should_verify_health: "{{ target_state in ['STARTING', 'RUNNING'] and (component_ports | default([]) | length > 0 or component_processes | default([]) | length > 0) }}"
+
+- name: "Verify Health - Display health verification information"
+  debug:
+    msg:
+      - "Target State: {{ target_state }}"
+      - "Should Verify Health: {{ should_verify_health }}"
+      - "Ports to Check: {{ component_ports | default([]) | join(', ') }}"
+      - "Processes to Check: {{ component_processes | default([]) | join(', ') }}"
+  when: should_verify_health
+
+- name: "Verify Health - Check port availability"
+  wait_for:
+    port: "{{ item }}"
+    timeout: 30
+    delay: 2
+  loop: "{{ component_ports | default([]) }}"
+  when: 
+    - should_verify_health
+    - component_ports | default([]) | length > 0
+  register: port_check_result
+
+- name: "Verify Health - Check process availability"
+  shell: "pgrep -f '{{ item }}'"
+  loop: "{{ component_processes | default([]) }}"
+  when: 
+    - should_verify_health
+    - component_processes | default([]) | length > 0
+  register: process_check_result
+  failed_when: false
+
+- name: "Verify Health - Check for missing processes"
+  fail:
+    msg: "Required processes not running: {{ process_check_result.results | selectattr('rc', 'ne', 0) | map(attribute='item') | list | join(', ') }}"
+  when: 
+    - should_verify_health
+    - component_processes | default([]) | length > 0
+    - process_check_result.results | selectattr('rc', 'ne', 0) | list | length > 0
+
+- name: "Verify Health - Check system resource availability"
+  shell: |
+    # Check memory usage
+    memory_usage=$(ps -o %mem -p 1 | tail -1 | awk '{print $1}')
+    echo "Memory usage: ${memory_usage}%"
+    
+    # Check disk space
+    disk_usage=$(df -h / | tail -1 | awk '{print $5}' | sed 's/%//')
+    echo "Disk usage: ${disk_usage}%"
+    
+    # Check load average
+    load_avg=$(uptime | awk '{print $(NF-2)}' | sed 's/,//')
+    echo "Load average: ${load_avg}"
+  when: should_verify_health
+  register: resource_check_result
+
+- name: "Verify Health - Display resource information"
+  debug:
+    msg: "{{ resource_check_result.stdout_lines }}"
+  when: 
+    - should_verify_health
+    - resource_check_result is defined
+
+- name: "Verify Health - Check dependencies"
+  systemd:
+    name: "{{ item }}"
+  loop: "{{ component_dependencies | default([]) }}"
+  when: 
+    - should_verify_health
+    - component_dependencies | default([]) | length > 0
+  register: dependency_check_result
+
+- name: "Verify Health - Check for failed dependencies"
+  fail:
+    msg: "Dependency services not running: {{ dependency_check_result.results | selectattr('status.ActiveState', 'ne', 'active') | map(attribute='item') | list | join(', ') }}"
+  when: 
+    - should_verify_health
+    - component_dependencies | default([]) | length > 0
+    - dependency_check_result.results | selectattr('status.ActiveState', 'ne', 'active') | list | length > 0
+
+- name: "Verify Health - Record successful health verification"
+  set_fact:
+    transition_actions_executed: "{{ transition_actions_executed | default([]) + ['health_verified'] }}"
+  when: should_verify_health

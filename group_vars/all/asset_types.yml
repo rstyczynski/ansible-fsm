@@ -10,14 +10,14 @@ asset_types:
     default_timeout: 300
   node:
     role_name: transition_node
-    role_collection: null  # null for local roles
+    role_collection: platformteam.transition  # collection namespace
     default_timeout: 300
     disable_state_guard: true
     disable_pre_state_guard: true    # Allow dependency start logic to run
     disable_post_state_guard: false  # Still validate final state
   os:
     role_name: transition_os
-    role_collection: null  # null for local roles
+    role_collection: platformteam.transition  # collection namespace
     default_timeout: 300
     disable_pre_state_guard: false   # Validate before transition
     disable_post_state_guard: false  # Validate after transition

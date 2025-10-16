@@ -1,0 +1,13 @@
+---
+# Get component state from map
+# This task retrieves the current state of a specific component from the global state map
+
+- name: "Map State - Get component state from map"
+  set_fact:
+    current_component_data: "{{ global_component_states[component] | default({}) }}"
+    current_state: "{{ global_component_states[component].state | default(asset_definitions[component].initial_state) }}"
+    state_reading_method: "state_map@roles/state_context/tasks/get_component_state.yml"
+    state_reading_timestamp: "{{ global_component_states[component].timestamp | default(ansible_date_time.iso8601) }}"
+  when: 
+    - global_component_states is defined
+    - component is defined

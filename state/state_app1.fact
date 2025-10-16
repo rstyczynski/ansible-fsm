@@ -7,10 +7,10 @@ ansible_version:
 component: app1
 component_state: RUNNING
 component_state_method: state_persist
-component_state_previous: CREATED
-component_state_timestamp: '2025-10-16T07:38:24Z'
-component_state_transition: CREATED -> RUNNING
+component_state_previous: RUNNING
+component_state_timestamp: '2025-10-16T08:11:31Z'
+component_state_transition: RUNNING -> RUNNING
 component_state_valid: true
 hostname: Ryszards-MacBook-Pro
-playbook_name: Change Component State
+playbook_name: Change Components State
 user_id: rstyczynski

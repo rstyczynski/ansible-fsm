@@ -1,0 +1,57 @@
+---
+# Main tasks for transition_service role
+# This role contains the actual transition logic for service instances
+
+- name: "Transition Service - Initialize transition execution"
+  set_fact:
+    transition_timestamp: "{{ ansible_date_time.iso8601 }}"
+    transition_success: false
+    transition_actions_executed: []
+
+- name: "Transition Service - Validate required variables"
+  assert:
+    that:
+      - target_state is defined and target_state != ""
+      - current_state is defined and current_state != ""
+    fail_msg: "Missing required variables for service transition"
+    success_msg: "All required variables are present for service transition"
+
+- name: "Transition Service - Display transition parameters"
+  debug:
+    msg:
+      - "Component: {{ component_instance | default('service') }}"
+      - "Current State: {{ current_state }}"
+      - "Target State: {{ target_state }}"
+      - "Transition Timestamp: {{ transition_timestamp }}"
+
+# Execute state-specific transition actions
+- name: "Transition Service - Execute state-specific actions"
+  include_tasks: "{{ item }}.yml"
+  loop:
+    - start_services
+    - stop_services
+    - verify_health
+    - cleanup_resources
+    - handle_failure
+  when: 
+    - target_state is defined
+    - not ansible_check_mode
+
+- name: "Transition Service - Set transition success"
+  set_fact:
+    transition_success: true
+    transition_actions_executed: "{{ transition_actions_executed | default([]) + ['transition_completed'] }}"
+
+- name: "Transition Service - Display transition result"
+  debug:
+    msg:
+      - "Component: {{ component_instance | default('service') }}"
+      - "Target State: {{ target_state }}"
+      - "Transition Success: {{ transition_success }}"
+      - "Actions Executed: {{ transition_actions_executed | join(', ') }}"
+      - "Transition Timestamp: {{ transition_timestamp }}"
+
+- name: "Transition Service - Fail if transition failed"
+  fail:
+    msg: "Service transition failed"
+  when: not transition_success

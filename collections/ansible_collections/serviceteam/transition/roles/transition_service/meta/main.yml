@@ -1,0 +1,35 @@
+---
+# Metadata for transition_service role
+galaxy_info:
+  role_name: transition_service
+  author: Service Team
+  description: "Transition logic for service instances in state-driven playbook framework"
+  company: "Service Team"
+  license: "MIT"
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: CentOS
+      versions:
+        - 7
+        - 8
+    - name: RHEL
+      versions:
+        - 7
+        - 8
+        - 9
+    - name: macOS
+      versions:
+        - 10.15
+        - 11.0
+        - 12.0
+  galaxy_tags:
+    - service
+    - transition
+    - state_machine
+    - platform
+
+dependencies: []

@@ -20,6 +20,8 @@ run_test "Bulk stop components" "ansible-playbook change_state_bulk.yml -e compo
 run_test "Stop node1 (direct)" "ansible-playbook node1_stop.yml"
 run_test "Start node1 (direct)" "ansible-playbook node1_start.yml"
 
-echo "app1: Restore state"
+ansible-playbook get_component_state.yml -e component_name=node1 
+ansible-playbook get_component_state.yml -e component_name=app1
+
 mv ./state/state_app1.fact.bak ./state/state_app1.fact
 mv ./state/state_node1.fact.bak ./state/state_node1.fact

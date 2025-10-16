@@ -1,0 +1,131 @@
+---
+# Handle failure for service transition
+# This task handles failure scenarios for service instances
+
+- name: "Handle Failure - Check if failure handling is needed"
+  set_fact:
+    should_handle_failure: "{{ target_state == 'FAILED' }}"
+
+- name: "Handle Failure - Display failure handling information"
+  debug:
+    msg:
+      - "Target State: {{ target_state }}"
+      - "Should Handle Failure: {{ should_handle_failure }}"
+      - "Component: service"
+  when: should_handle_failure
+
+- name: "Handle Failure - Diagnose system issues"
+  shell: |
+    # Check system logs for errors
+    journalctl --since "1 hour ago" --priority=err --no-pager | head -20
+    
+    # Check for failed services
+    systemctl --failed --no-pager
+    
+    # Check system resource usage
+    echo "=== Memory Usage ==="
+    free -h
+    
+    echo "=== Disk Usage ==="
+    df -h
+    
+    echo "=== Load Average ==="
+    uptime
+  when: should_handle_failure
+  register: diagnosis_result
+
+- name: "Handle Failure - Display diagnosis results"
+  debug:
+    msg: "{{ diagnosis_result.stdout_lines }}"
+  when: 
+    - should_handle_failure
+    - diagnosis_result is defined
+
+- name: "Handle Failure - Check component-specific issues"
+  shell: |
+    # Check if services are in failed state
+    for service in {{ component_services | default([]) | join(' ') }}; do
+      if systemctl is-failed "$service" >/dev/null 2>&1; then
+        echo "Failed service: $service"
+        systemctl status "$service" --no-pager
+      fi
+    done
+    
+    # Check if processes are running
+    for process in {{ component_processes | default([]) | join(' ') }}; do
+      if ! pgrep -f "$process" >/dev/null 2>&1; then
+        echo "Missing process: $process"
+      fi
+    done
+    
+    # Check port availability
+    for port in {{ component_ports | default([]) | join(' ') }}; do
+      if ! netstat -tuln | grep ":$port " >/dev/null 2>&1; then
+        echo "Port not listening: $port"
+      fi
+    done
+  when: should_handle_failure
+  register: component_diagnosis_result
+  failed_when: false
+
+- name: "Handle Failure - Display component diagnosis results"
+  debug:
+    msg: "{{ component_diagnosis_result.stdout_lines }}"
+  when: 
+    - should_handle_failure
+    - component_diagnosis_result is defined
+
+- name: "Handle Failure - Attempt service recovery"
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+  loop: "{{ component_services | default([]) }}"
+  when: should_handle_failure
+  register: service_recovery_result
+
+- name: "Handle Failure - Check recovery success"
+  systemd:
+    name: "{{ item }}"
+  loop: "{{ component_services | default([]) }}"
+  when: should_handle_failure
+  register: recovery_check_result
+
+- name: "Handle Failure - Report recovery status"
+  debug:
+    msg: "Service recovery status: {{ recovery_check_result.results | map(attribute='status.ActiveState') | list }}"
+  when: 
+    - should_handle_failure
+    - recovery_check_result is defined
+
+- name: "Handle Failure - Create failure report"
+  copy:
+    content: |
+      # Service Failure Report
+      Timestamp: {{ ansible_date_time.iso8601 }}
+      Component: service
+      Target State: {{ target_state }}
+      Current State: {{ current_state }}
+      
+      ## System Diagnosis
+      {{ diagnosis_result.stdout | default('No diagnosis available') }}
+      
+      ## Component Diagnosis
+      {{ component_diagnosis_result.stdout | default('No component diagnosis available') }}
+      
+      ## Recovery Attempts
+      Service Recovery: {{ service_recovery_result.results | map(attribute='changed') | list }}
+      Recovery Status: {{ recovery_check_result.results | map(attribute='status.ActiveState') | list }}
+      
+      ## Recommendations
+      - Check system logs for detailed error information
+      - Verify all dependencies are available
+      - Consider manual intervention if automatic recovery fails
+      - Review component configuration for potential issues
+    dest: "/tmp/service_failure_report_{{ ansible_date_time.epoch }}.txt"
+    mode: '0644'
+  when: should_handle_failure
+
+- name: "Handle Failure - Record failure handling completion"
+  set_fact:
+    transition_actions_executed: "{{ transition_actions_executed | default([]) + ['failure_handled'] }}"
+  when: should_handle_failure

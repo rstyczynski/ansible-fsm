@@ -1,0 +1,10 @@
+---
+namespace: serviceteam
+name: transition
+version: 1.0.0
+readme: README.md
+authors:
+  - Service Team
+description: Transition logic for services in state-driven playbook framework
+license: MIT
+dependencies: []

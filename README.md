@@ -1,88 +1,76 @@
-# AI Aider - Ansible State-Driven Playbook Framework
+# Ansible Finite State Machine
 
-This repository implements an automated assistant that generates, maintains, and verifies Ansible playbooks and roles implementing a state-machine-based restart and transition framework for Day-2 operations automation.
+version 0.1 - concept
+
+This repository implements an Ansible-based finite state machine (FSM) framework for managing the lifecycle and state transitions of infrastructure and application components (like app1 and node1) using a modular, collection-driven approach.
+
+Implementation covers following concepts:
+
+1. FSM orchestrator invokes transition logic
+
+2. State Machine covers transient states that are automatically reached before transition logic and the target state e.g. STARTING before RUNNING
+
+3. Transition logic is owned by asset owning team (separation of concerns).
 
 ## Quick Start
 
-### 1. Install Dependencies
+The repository includes several bash test scripts in the root directory:
+
+- **`test_smoke.sh`** - Basic smoke test for app1 and node1 components
+- **`test_app1.sh`** - Focused test for app1 component with state transition validation (RUNNING, STOPPED, TERMINATED)
+- **`test_all.sh`** - Comprehensive test suite for app1 and node1 components with bulk operations
+
+## Run State Transitions
 
 ```bash
-# Install Ansible collections
-ansible-galaxy collection install -r requirements.yml
-```
-
-### 2. Configure State Machine
-
-Edit `group_vars/all/state_machines.yml` to define your components and their state machines.
-
-### 3. Run State Transitions
-
-```bash
-# Transition a component to RUNNING state
-ansible-playbook change_component_state.yml \
-  -e component=web_server \
+# Transition app1 to RUNNING state
+ansible-playbook change_state.yml \
+  -e component_name=app1 \
   -e state=RUNNING
 
-# Check current state only
-ansible-playbook change_component_state.yml \
-  -e component=web_server \
-  --tags state_context
+# Transition node1 to STOPPED state
+ansible-playbook change_state.yml \
+  -e component_name=node1 \
+  -e state=STOPPED
 
-# Dry run a transition
-ansible-playbook change_component_state.yml \
-  -e component=web_server \
-  -e state=MAINTENANCE \
-  -e dry_run=true
+# Check current state
+ansible-playbook get_component_state.yml \
+  -e component_name=app1
 ```
+
+## Look into Finite State Machine configuration
+
+Edit `group_vars/all/state_machines.yml` to define your components and their state machines. 
+
+## Collections
+
+Ansible collection keeps together logic owned by subject matter experts. Practically each collection is owned by one of a teams interacting with systems via Ansible. The framework includes several Ansible collections organized by team: toolchain, service, app, and platform.
+
+- **`toolchain.fsm`** - State machine framework with roles for state management
+- **`platformteam.transition`** - Platform and OS transition roles (used by node1)
+- **`appteam.transition`** - Application transition roles (used by app1)
+- **`serviceteam.transition`** - Service transition roles
+
+## Configuration Files
+
+Key configuration files in the repository:
+
+- **`inventory.yml`** - Configuration variables
+- **`group_vars/all/`** - Configuration variables
+
+- **`state_machines.yml`** - State machine definitions (generic_lifecycle with states: CREATED, STARTING, RUNNING, STOPPING, STOPPED, TERMINATING, TERMINATED, MAINTENANCE, FAILED)
+- **`assets.yml`** - Asset definitions (app1, node1)
+- **`asset_types.yml`** - Asset type configurations
+
+## Playbooks
+
+- **`change_state.yml`** - Main state change playbook
+- **`change_state_bulk.yml`** - Bulk state change operations
+- **`get_component_state.yml`** - State query playbook
+- **`node1_start.yml`** / **`node1_stop.yml`** - Direct node operations
 
 ## Documentation
 
-All documentation has been moved to the `doc/` directory:
+Disclaimer: docs are AI generated
 
-- **[Main Documentation](doc/README.md)** - Complete framework documentation
-- **[Quick Start Guide](doc/QUICKSTART.md)** - Getting started guide
-- **[Implementation Summary](doc/IMPLEMENTATION_SUMMARY.md)** - Technical implementation details
-- **[Refactoring Notes](doc/REFACTORING_NOTES.md)** - Recent refactoring changes
-- **[SRS Document](doc/AI_Aider_SRS_v1.5.md)** - Software Requirements Specification
-
-### Role Documentation
-
-- **[state_change](doc/roles/state_change.md)** - Generic state change orchestrator
-- **[state_context](doc/roles/state_context.md)** - State detection and reading
-- **[state_guard](doc/roles/state_guard.md)** - Transition validation
-- **[state_persist](doc/roles/state_persist.md)** - State persistence
-- **[state_transient](doc/roles/state_transient.md)** - Transient state handling
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    State Machine Framework                  │
-├─────────────────────────────────────────────────────────────┤
-│  group_vars/all/state_machines.yml                          │
-│  ├── Component definitions                                 │
-│  ├── State definitions                                     │
-│  ├── Transition rules                                      │
-│  └── Configuration settings                                │
-├─────────────────────────────────────────────────────────────┤
-│  Roles                                                      │
-│  ├── state_context/     - Detect current state             │
-│  ├── state_guard/       - Validate transitions             │
-│  ├── state_persist/     - Persist state changes            │
-│  ├── state_transient/   - Handle transient states          │
-│  └── state_change/      - Generic state change orchestrator│
-├─────────────────────────────────────────────────────────────┤
-│  change_component_state.yml                                │
-│  ├── Simple playbook interface                             │
-│  └── Uses state_change role                                │
-└─────────────────────────────────────────────────────────────┘
-```
-
-## Files
-
-- `change_component_state.yml` - Simple state change playbook
-- `state_transition_playbook.yml.backup` - Original playbook (backup)
-- `group_vars/all/` - Configuration files
-- `roles/` - Ansible roles
-- `doc/` - All documentation
-
+- **`doc/`** - All documentation.

@@ -1,7 +1,0 @@
----
-# Ansible Collection Requirements
-# This file specifies the required Ansible collections for the state-driven playbook framework
-
-collections:
-  - appteam.transition
-  - toolchain.fsm

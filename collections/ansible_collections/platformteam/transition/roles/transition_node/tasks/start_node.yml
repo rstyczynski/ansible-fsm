@@ -1,0 +1,121 @@
+---
+# Node ::  for app instance transition
+# This task handles service startup logic for application instances
+
+- name: "Node :: Check if services need to be started"
+  set_fact:
+    should_start_node: "{{ target_state in ['STARTING', 'RUNNING'] }}"
+
+- name: "Node :: Display service startup information"
+  debug:
+    msg:
+      - "Target State: {{ target_state }}"
+      - "Should Node :: : {{ should_start_node }}"
+      - "Services to Start: {{ component_services | default([]) | join(', ') }}"
+  when: should_start_node
+
+#
+# resource logic block | START
+#
+- block:
+    - name: "Node :: Start :: Pause for 3 seconds"
+      pause:
+        seconds: 3
+
+    - name: "Node :: Start :: Display dependencies and start logic"
+      debug:
+        msg:
+          - "Node Dependencies:"
+          - "  Processing dependency: {{ item }}"
+          - "  Dependency type: {{ asset_definitions[item].asset_type | default('unknown') }}"
+          - "  Dependency state machine: {{ asset_definitions[item].state_machine_spec | default('unknown') }}"
+      loop: "{{ component_dependencies | default([]) }}"
+      when: 
+        - should_start_node
+        - component_dependencies | default([]) | length > 0
+
+    - name: "Node :: Start :: Check dependency states"
+      include_role:
+        name: state_context
+      vars:
+        component_name: "{{ item }}"
+        asset_type: "{{ asset_definitions[item].asset_type | default('app') }}"
+      loop: "{{ component_dependencies | default([]) }}"
+      when: 
+        - should_start_node
+        - component_dependencies | default([]) | length > 0
+      register: dependency_state_check
+
+    - name: "Node :: Start :: Extract dependency states"
+      set_fact:
+        dependency_states: "{{ component_dependencies | map('extract', global_component_states) | map(attribute='state') | list }}"
+        dependency_components: "{{ component_dependencies | default([]) }}"
+      when: 
+        - should_start_node
+        - component_dependencies | default([]) | length > 0
+
+    - name: "Node :: Start :: Create dependency state mapping"
+      set_fact:
+        dependency_state_map: "{{ dict(dependency_components | zip(dependency_states)) }}"
+      when: 
+        - should_start_node
+        - component_dependencies | default([]) | length > 0
+
+
+    - name: "Node :: Start :: Display dependency states"
+      debug:
+        msg:
+          - "Dependency States: {{ dependency_state_map | default({}) }}"
+          - "Target State: {{ target_state }}"
+      when: 
+        - should_start_node
+        - component_dependencies | default([]) | length > 0
+
+    - name: "Node :: Start :: Start dependencies that are not RUNNING"
+      include_role:
+        name: state_change
+      vars:
+        override_component_name: "{{ item.key }}"
+        target_state: "RUNNING"
+        skip_guard: false
+        component_dependencies: "{{ asset_definitions[item.key].dependencies | default([]) }}"
+      loop: "{{ dependency_state_map | dict2items }}"
+      when: 
+        - should_start_node
+        - component_dependencies | default([]) | length > 0
+        - item.value not in ['RUNNING']
+      register: dependency_start_results
+
+    - name: "Node :: Start :: Wait for dependencies to be RUNNING"
+      include_role:
+        name: state_context
+      vars:
+        component_name: "{{ item }}"
+        asset_type: "{{ asset_definitions[item].asset_type | default('app') }}"
+      loop: "{{ component_dependencies | default([]) }}"
+      when: 
+        - should_start_node
+        - component_dependencies | default([]) | length > 0
+      register: final_dependency_check
+
+    - name: "Node :: Start :: Validate all dependencies are RUNNING"
+      assert:
+        that:
+          - global_component_states[item].state == 'RUNNING'
+        fail_msg: "Dependency '{{ item }}' is not in RUNNING state. Current state: {{ global_component_states[item].state }}"
+        success_msg: "Dependency '{{ item }}' is in RUNNING state"
+      loop: "{{ component_dependencies | default([]) }}"
+      when: 
+        - should_start_node
+        - component_dependencies | default([]) | length > 0
+      
+
+    - name: "Node :: Start :: Raise exception (test)"
+      fail:
+        msg: "An exception was intentionally raised here as requested."
+      when: request_exception | default(false) | bool == true
+
+  when: should_start_node | default(false) | bool == true
+#
+# resource logic block | STOP
+#
