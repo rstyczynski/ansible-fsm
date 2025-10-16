@@ -1,0 +1,48 @@
+---
+# Fallback individual file reading for state_context role
+# This handles the original approach when map is not available
+
+- name: "State Context - Check if state fact file exists"
+  stat:
+    path: "{{ state_fact_file }}"
+  register: state_fact_file_stat
+  tags:
+    - state_context
+    - state_reading
+    - individual_file
+
+- name: "State Context - Read state from fact file if available"
+  include_vars:
+    file: "{{ state_fact_file }}"
+  when: state_fact_file_stat.stat.exists
+  tags:
+    - state_context
+    - state_reading
+    - individual_file
+
+- name: "State Context - Set state from fact file"
+  set_fact:
+    current_state: "{{ component_state | default(initial_state) }}"
+    state_reading_method: "fact_file"
+    state_reading_timestamp: "{{ component_state_timestamp | default(ansible_date_time.iso8601) }}"
+  when: state_fact_file_stat.stat.exists and component_state is defined
+  tags:
+    - state_context
+    - state_reading
+    - individual_file
+
+- name: "State Context - Display individual file state information"
+  debug:
+    msg:
+      - "Component: {{ component }}"
+      - "Current State: {{ current_state }}"
+      - "Reading Method: {{ state_reading_method }}"
+      - "Reading Timestamp: {{ state_reading_timestamp }}"
+      - "State Valid: True"
+      - "File Path: {{ state_fact_file }}"
+      - "File Exists: {{ state_fact_file_stat.stat.exists }}"
+  when: state_display_verbose | default(true)
+  tags:
+    - state_context
+    - state_info
+    - individual_file

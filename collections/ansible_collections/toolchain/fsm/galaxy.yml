@@ -1,0 +1,14 @@
+---
+namespace: toolchain
+name: fsm
+version: 1.0.0
+readme: README.md
+authors:
+  - Avaloq Team
+description: Finite State Machine collection for Ansible state management
+tags:
+  - state
+  - fsm
+  - automation
+  - infrastructure
+dependencies: {}

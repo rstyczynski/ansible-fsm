@@ -8,10 +8,10 @@
     component_name: ""
     
   roles:
-    - role: state_change
+    - role: toolchain.fsm.state_change
       vars:
         component_name: "node1"
-    - role: state_change
+    - role: toolchain.fsm.state_change
       vars:
         component_name: "app1"
 

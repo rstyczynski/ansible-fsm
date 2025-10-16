@@ -18,4 +18,4 @@
     skip_guard: false
 
   roles:
-    - role: state_change
+    - role: toolchain.fsm.state_change

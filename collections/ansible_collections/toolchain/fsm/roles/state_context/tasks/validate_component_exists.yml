@@ -1,0 +1,13 @@
+---
+# Validate component exists in map
+# This task ensures the requested component exists in the global state map
+
+- name: "Map State - Validate component exists in map or asset definitions"
+  assert:
+    that:
+      - global_component_states[component] is defined or asset_definitions[component] is defined
+    fail_msg: "Component '{{ component }}' not found in state map or asset definitions. Available components: {{ global_component_states.keys() | list | join(', ') }}"
+    success_msg: "Component '{{ component }}' found in state map or asset definitions"
+  when: 
+    - global_component_states is defined
+    - component is defined

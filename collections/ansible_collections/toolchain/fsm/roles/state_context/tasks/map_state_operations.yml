@@ -1,0 +1,47 @@
+---
+# Map-based state operations for efficient component state access
+# This file orchestrates individual operation files for modular state management
+
+- name: "Get component state from map"
+  include_tasks: get_component_state.yml
+  when: 
+    - global_component_states is defined
+    - component is defined
+
+- name: "Validate component exists in map"
+  include_tasks: validate_component_exists.yml
+  when: 
+    - global_component_states is defined
+    - component is defined
+
+- name: "Validate state from map"
+  include_tasks: validate_state_from_map.yml
+  when: 
+    - current_component_data.state is defined
+    - component_state_machine is defined
+
+- name: "Set final state facts from map"
+  include_tasks: set_final_state_facts.yml
+  when: component is defined
+
+- name: "Display component state from map"
+  include_tasks: display_component_state.yml
+  when: component is defined
+
+- name: "List all component states"
+  include_tasks: list_all_component_states.yml
+  when: 
+    - global_component_states is defined
+    - list_all_components | default(false)
+
+- name: "Get components by state"
+  include_tasks: get_components_by_state.yml
+  when: 
+    - global_component_states is defined
+    - state_filter is defined
+
+- name: "Display components by state"
+  include_tasks: display_components_by_state.yml
+  when: 
+    - components_by_state is defined
+    - state_filter is defined

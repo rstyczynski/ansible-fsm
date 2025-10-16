@@ -1,0 +1,12 @@
+---
+# Get components by state
+# This task filters components by their current state
+
+- name: "Map State - Get components by state"
+  set_fact:
+    components_by_state: "{{ global_component_states | dict2items | groupby('value.state') }}"
+  vars:
+    target_state: "{{ state_filter | default('') }}"
+  when: 
+    - global_component_states is defined
+    - state_filter is defined

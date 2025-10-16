@@ -1,0 +1,70 @@
+---
+# Custom guard conditions for state_guard role
+# This file handles custom validation logic for state transitions
+
+# Custom guard conditions are handled by individual tasks below
+
+- name: "State Guard - Example custom condition - Check system resources"
+  assert:
+    that:
+      - ansible_memtotal_mb > 1024
+    fail_msg: "Insufficient memory for transition. Required: 1024MB, Available: {{ ansible_memtotal_mb }}MB"
+    success_msg: "System resources are sufficient for transition"
+  when: 
+    - "'resource_check' in (custom_guard_conditions | default([]))"
+    - target_transition in ['STARTING', 'RUNNING']
+  tags:
+    - state_guard
+    - custom_validation
+
+- name: "State Guard - Example custom condition - Check service dependencies"
+  systemd:
+    name: "{{ item }}"
+  register: dependency_service_status
+  loop: "{{ component_dependencies | default([]) }}"
+  when: 
+    - "'dependency_check' in (custom_guard_conditions | default([]))"
+    - target_transition in ['STARTING', 'RUNNING']
+  tags:
+    - state_guard
+    - custom_validation
+
+- name: "State Guard - Validate service dependencies"
+  assert:
+    that:
+      - item.status.ActiveState == 'active'
+    fail_msg: "Required dependency service '{{ item.item }}' is not active"
+    success_msg: "All required dependency services are active"
+  loop: "{{ dependency_service_status.results | default([]) }}"
+  when: 
+    - "'dependency_check' in (custom_guard_conditions | default([]))"
+    - target_transition in ['STARTING', 'RUNNING']
+    - dependency_service_status.results is defined
+  tags:
+    - state_guard
+    - custom_validation
+
+- name: "State Guard - Example custom condition - Check maintenance window"
+  set_fact:
+    current_hour: "{{ ansible_date_time.hour | int }}"
+    maintenance_window_start: "{{ component_maintenance_window.start | default(2) }}"
+    maintenance_window_end: "{{ component_maintenance_window.end | default(4) }}"
+  when: 
+    - "'maintenance_window_check' in (custom_guard_conditions | default([]))"
+    - target_transition in ['MAINTENANCE']
+  tags:
+    - state_guard
+    - custom_validation
+
+- name: "State Guard - Validate maintenance window"
+  assert:
+    that:
+      - current_hour >= maintenance_window_start or current_hour <= maintenance_window_end
+    fail_msg: "Maintenance transition not allowed outside maintenance window ({{ maintenance_window_start }}:00 - {{ maintenance_window_end }}:00). Current time: {{ current_hour }}:00"
+    success_msg: "Maintenance transition is allowed within maintenance window"
+  when: 
+    - "'maintenance_window_check' in (custom_guard_conditions | default([]))"
+    - target_transition in ['MAINTENANCE']
+  tags:
+    - state_guard
+    - custom_validation
