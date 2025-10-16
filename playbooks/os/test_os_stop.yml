@@ -4,18 +4,27 @@
 
   vars:
     global_asset_name: "app1"
+
+    # vers for toolchain.fsm.state_change
     component_name: "{{ global_asset_name }}"
 
-  roles:
-    - role: toolchain.fsm.state_change
+  tasks:
+    - name: First state change to MAINTENANCE
+      include_role:
+        name: toolchain.fsm.state_change
       vars:
-        component_name: "{{ global_asset_name }}"
         target_state: "MAINTENANCE"
     
-    # - role: appteam.app1.app_stop
-    # - role: platformteam.linux.os_stop
+    - name: App Stop
+      include_role:
+        name: appteam.app1.app_stop
+    
+    - name: OS Stop  
+      include_role:
+        name: platformteam.linux.os_stop
 
-    # - role: toolchain.fsm.state_change
-    #   vars:
-    #     component_name: "{{ global_asset_name }}"
-    #     target_state: "STOPPED"    
+    - name: Second state change to STOPPED
+      include_role:
+        name: toolchain.fsm.state_change
+      vars:
+        target_state: "STOPPED"    

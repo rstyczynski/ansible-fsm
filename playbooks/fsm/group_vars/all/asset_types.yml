@@ -18,5 +18,5 @@ asset_types:
 
   app_type2:
     role_name: transition_app_type2  # local role
-    default_timeout: 300
+
 

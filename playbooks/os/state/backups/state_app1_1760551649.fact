@@ -5,12 +5,12 @@ ansible_version:
     revision: 7
     string: 2.18.7
 component: app1
-component_state: TERMINATED
+component_state: STOPPING
 component_state_method: state_persist
-component_state_previous: STOPPED
-component_state_timestamp: '2025-10-16T12:46:41Z'
-component_state_transition: STOPPED -> TERMINATED
+component_state_previous: MAINTENANCE
+component_state_timestamp: '2025-10-16T13:35:51Z'
+component_state_transition: MAINTENANCE -> STOPPING
 component_state_valid: true
 hostname: Ryszards-MacBook-Pro
-playbook_name: Change Component State
+playbook_name: Trivial OS Stop Client
 user_id: rstyczynski

@@ -11,7 +11,7 @@
     guard_validation:
       strict_mode: true
       allow_self_transitions: false
-      require_explicit_transition: true
+      # require_explicit_transition: true
   tags:
     - pre_state_guard
     - transition_validation

@@ -195,8 +195,17 @@
     - state_persist
     - transient_state_set
 
-# Dynamic transition execution based on component type
-- name: "State Change: Execute transition actions for component"
+# Check if target state has transient mapping (special case)
+- name: "State Change: Check if target state has transient mapping"
+  ansible.builtin.set_fact:
+    has_transient_mapping: "{{ target_state in component_state_machine.transient_mappings }}"
+    transient_mapping: "{{ component_state_machine.transient_mappings[target_state] | default({}) }}"
+  tags:
+    - transition_execution
+    - transient_check
+
+# Execute transition with specific logic (for transient states)
+- name: "State Change: Execute transition with specific logic"
   ansible.builtin.include_role:
     name: "{{ transition_role_full_name }}"
   vars:
@@ -216,9 +225,25 @@
     - target_state != ""
     - not dry_run
     - not skip_transient_mapping
+    - has_transient_mapping
   tags:
     - transition_execution
     - "execute_actions_{{ component_name }}"
+
+# Direct transition - default behavior (no specific logic required)
+- name: "State Change: Execute direct transition (default behavior)"
+  ansible.builtin.debug:
+    msg: "Executing direct transition for {{ component_name }} from {{ component_state }} to {{ target_state }}"
+  when: 
+    - component_state is defined
+    - target_state is defined
+    - target_state != ""
+    - not dry_run
+    - not has_transient_mapping
+  tags:
+    - transition_execution
+    - direct_transition
+    - "execute_direct_{{ component_name }}"
 
 - name: "State Change: Skip transition - already in target state"
   ansible.builtin.debug:
@@ -232,7 +257,7 @@
     - transition_execution
     - skip_transition
 
-# State Persist - Complete transition to final state (SCOPED)
+# State Persist - Complete transition to final state (for transient states)
 - name: "State Change: State Persist - Complete transition to final state"
   ansible.builtin.include_role:
     name: state_persist
@@ -245,12 +270,13 @@
     - target_state != ""
     - transient_state != ""
     - not skip_transient_mapping
+    - has_transient_mapping
   tags:
     - state_persist
     - final_state_completion
 
-# State Persist - Persist non-transient states directly (SCOPED)
-- name: "State Change: State Persist - Persist non-transient state"
+# State Persist - Persist direct transition state (default behavior)
+- name: "State Change: State Persist - Persist direct transition state"
   ansible.builtin.include_role:
     name: state_persist
   vars:
@@ -260,11 +286,22 @@
   when: 
     - target_state is defined
     - target_state != ""
-    - transient_state == ""
-    - skip_transient_mapping
+    - not has_transient_mapping
   tags:
     - state_persist
-    - state_persistence
+    - direct_transition_persistence
+
+# Update component state for direct transitions before POST guard validation
+- name: "State Change: Update component state for direct transitions"
+  ansible.builtin.set_fact:
+    component_state: "{{ target_state }}"
+  when: 
+    - target_state is defined
+    - target_state != ""
+    - not has_transient_mapping
+  tags:
+    - post_state_guard
+    - direct_transition_state_update
 
 # POST State Guard - Final state validation after asset transition
 - name: "State Change: POST State Guard - Skip POST guard validation for configured asset types"
