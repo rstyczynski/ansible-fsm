@@ -30,7 +30,7 @@ collections:
     version: ">=3.0.0"
     # Uncomment if using PostgreSQL databases
 
-# Local collections (if any)
-# - name: local.state_machine
-#   source: ./collections/state_machine
-#   type: dir
+# Local collections
+  - name: appteam.transition
+    source: ./collections/ansible_collections/appteam/transition
+    type: dir

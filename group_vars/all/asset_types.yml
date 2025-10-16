@@ -23,7 +23,7 @@ asset_types:
     disable_post_state_guard: false  # Validate after transition
   app:
     role_name: transition_app
-    role_collection: null  # null for local roles
+    role_collection: appteam.transition  # collection namespace
     default_timeout: 300
     disable_pre_state_guard: false   # Validate before transition
     disable_post_state_guard: false # Validate after transition

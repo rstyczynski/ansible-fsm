@@ -1,0 +1,41 @@
+---
+# Start App for app instance transition
+# This task handles service startup logic for application instances
+
+- name: "Start App - Check if App need to be started"
+  set_fact:
+    should_start_app: "{{ target_state in ['STARTING', 'RUNNING'] }}"
+
+- name: "Start App - Display app startup information"
+  debug:
+    msg:
+      - "Target State: {{ target_state }}"
+      - "Should Start App: {{ should_start_app }}"
+      - "App to Start: {{ component_app | default([]) | join(', ') }}"
+  when: should_start_app
+  
+#
+# resource logic block | START
+#
+- block:
+    - name: "Start App - Pause for 3 seconds"
+      pause:
+        seconds: 3
+
+    - name: "Start App - Wait for App to be ready"
+      wait_for:
+        port: "{{ item }}"
+        timeout: 30
+        delay: 2
+      loop: "{{ component_ports | default([]) }}"
+      when: component_ports | default([]) | length > 0
+
+    - name: "Start App - Raise exception (test)"
+      fail:
+        msg: "An exception was intentionally raised here as requested."
+      when: request_exception | default(false) | bool == true
+
+  when: should_start_app | default(false) | bool == true
+#
+# resource logic block | STOP
+#

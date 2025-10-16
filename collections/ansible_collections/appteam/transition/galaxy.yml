@@ -1,0 +1,10 @@
+---
+namespace: appteam
+name: transition
+version: 1.0.0
+readme: README.md
+authors:
+  - Component Team
+description: Transition logic for application instances in state-driven playbook framework
+license: MIT
+dependencies: []

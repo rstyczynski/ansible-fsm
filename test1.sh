@@ -3,6 +3,8 @@
 # Source the test framework
 source ./bin/test_helper.sh
 
+ansible-galaxy collection install appteam.transition
+
 echo "app1: Remove state"
 mv ./state/state_app1.fact ./state/state_app1.fact.bak
 
