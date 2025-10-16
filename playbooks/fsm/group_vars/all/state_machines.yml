@@ -1,0 +1,99 @@
+# State Machine Definition for Ansible State-Driven Playbook Development
+# This file defines the allowed states and transitions for components
+
+# State machine definitions
+state_machines:
+  generic_lifecycle:
+    states:
+      - CREATED
+      - STARTING
+      - RUNNING
+      - STOPPING
+      - STOPPED
+      - TERMINATING
+      - TERMINATED
+      - MAINTENANCE
+      - FAILED
+    
+    transitions:
+      CREATED:
+        to: [STARTING, RUNNING, FAILED]
+      STARTING:
+        to: [RUNNING, FAILED]
+      RUNNING:
+        to: [STOPPING, STOPPED, MAINTENANCE, FAILED]
+      STOPPING:
+        to: [STOPPED, FAILED]
+      STOPPED:
+        to: [STARTING, RUNNING, MAINTENANCE, TERMINATING, FAILED]
+      TERMINATING:
+        to: [TERMINATED, FAILED]
+      TERMINATED:
+        to: []  # Terminal state
+      MAINTENANCE:
+        to: [RUNNING, STOPPED, FAILED]
+      FAILED:
+        to: [STARTING, RUNNING, STOPPING, STOPPED, TERMINATED]  # Recovery transitions
+    
+    initial_state: CREATED
+    
+    # Transient state mappings - automatically handle intermediate states
+    transient_mappings:
+      RUNNING:
+        transient_state: STARTING
+        success_state: RUNNING
+        failure_state: FAILED
+        timeout: 300
+      STOPPED:
+        transient_state: STOPPING
+        success_state: STOPPED
+        failure_state: FAILED
+        timeout: 120
+      TERMINATED:
+        transient_state: TERMINATING
+        success_state: TERMINATED
+        failure_state: FAILED
+        timeout: 180
+
+    # State configurations
+    state_configs:
+      CREATED:
+        description: "Application instance has been created but not started"
+        actions: []
+      STARTING:
+        description: "Application instance is being initialized (app startup + service initialization)"
+        actions: ["start_app", "initialize_services", "verify_app_health"]
+        is_transient: true
+        timeout: 30
+      RUNNING:
+        description: "Application instance is operational (app running + services active)"
+        actions: ["monitor_app_health", "monitor_services", "handle_requests"]
+      STOPPING:
+        description: "Application instance is being shut down (app shutdown + service stop)"
+        actions: ["shutdown_app", "stop_services", "cleanup_resources"]
+        is_transient: true
+        timeout: 20
+      STOPPED:
+        description: "Application instance is stopped but can be restarted"
+        actions: ["cleanup_resources"]
+      TERMINATING:
+        description: "Application instance is being permanently removed"
+        actions: ["destroy_app", "cleanup_data"]
+        is_transient: true
+        timeout: 30
+      TERMINATED:
+        description: "Application instance has been permanently removed"
+        actions: []
+      MAINTENANCE:
+        description: "Application instance is in maintenance mode"
+        actions: ["maintenance_tasks", "backup_data"]
+      FAILED:
+        description: "Application instance is in an error state"
+        actions: ["diagnose_issues", "attempt_recovery"]
+
+# Global state machine settings
+state_machine:
+  fact_file_path: "./state/state_{{ component_name }}.fact"
+  backup_enabled: true
+  backup_directory: "./state/backups"
+  validation_strict: true

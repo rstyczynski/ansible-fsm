@@ -1,0 +1,13 @@
+namespace: platformteam
+name: linux
+version: 1.0.0
+readme: README.md
+authors:
+  - Platform Team
+description: Linux platform management collection
+license_file: LICENSE
+tags:
+  - linux
+  - platform
+  - management
+dependencies: {}

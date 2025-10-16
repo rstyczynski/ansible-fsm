@@ -1,0 +1,22 @@
+# Asset Types Configuration
+# This file defines the mapping between asset types and their corresponding roles
+# Supports both local roles and roles from collections
+
+# Asset type definitions with role mappings
+asset_types:
+  service:
+    role_name: transition_service  # local role
+
+  node:
+    role_name: platformteam.transition.transition_node  # collection.role format
+
+  os:
+    role_name: platformteam.transition.transition_os  # collection.role format
+
+  app:
+    role_name: appteam.transition.transition_app  # collection.role format
+
+  app_type2:
+    role_name: transition_app_type2  # local role
+    default_timeout: 300
+

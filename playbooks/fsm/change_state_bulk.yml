@@ -1,0 +1,29 @@
+---
+# Simple Bulk State Change Playbook
+# This playbook changes the state of multiple components using sequential operations
+# 
+# Usage:
+#   ansible-playbook change_components_state.yml -e components="node1,app1" -e state=RUNNING
+#   ansible-playbook change_components_state.yml -e components="all" -e state=STOPPED
+
+- name: "Change Components State"
+  hosts: "{{ target_hosts | default('all') }}"
+  gather_facts: true
+  become: true
+  serial: 1
+  
+  vars:
+    components_list: "{{ (components | default('all')).split(',') | map('trim') | list }}"
+    state_target: "{{ state | default('') }}"
+    guard_skip: false
+    
+  tasks:
+    - name: "Change state for component {{ item }}"
+      ansible.builtin.include_role:
+        name: toolchain.fsm.state_change
+      vars:
+        component_name: "{{ item }}"
+        target_state: "{{ state_target }}"
+        skip_guard: "{{ guard_skip }}"
+      loop: "{{ components_list }}"
+
