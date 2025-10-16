@@ -6,11 +6,15 @@ This repository implements an Ansible-based finite state machine (FSM) framework
 
 Implementation covers following concepts:
 
-1. FSM orchestrator invokes transition logic
+1. FSM model specifying states and transition definitions
 
-2. State Machine covers transient states that are automatically reached before transition logic and the target state e.g. STARTING before RUNNING
+2. FSM covers transient states that are automatically reached before transition logic and the target state e.g. STARTING before RUNNING
 
-3. Transition logic is owned by asset owning team (separation of concerns).
+3. Asset states are guarded by FSM
+
+4. Asset model associates FSM, and transition logic
+
+5. Transition logic is owned by asset owning team (separation of concerns).
 
 ## Quick Start
 
