@@ -342,19 +342,16 @@ The framework now supports a dedicated configuration file for mapping component 
 ```yaml
 asset_types:
   app:
-    role_name: transition_app
-    role_collection: null  # null for local roles
+    role_name: transition_app  # local role
     default_timeout: 300
 
   database:
-    role_name: transition_database
-    role_collection: null
+    role_name: transition_database  # local role
     default_timeout: 600
 
   # Example of role from a collection
   kubernetes:
-    role_name: transition_k8s
-    role_collection: "community.kubernetes"
+    role_name: community.kubernetes.transition_k8s  # collection.role format
     default_timeout: 900
 ```
 
@@ -374,16 +371,12 @@ asset_types:
 asset_type_info: "{{ asset_types[asset_type] | default({}) }}"
 
 # 2. Resolve role name (with fallback to legacy pattern)
-transition_role_name: "{{ asset_type_info.role_name | default(asset_type_config.legacy_pattern | replace('{{ asset_type }}', asset_type)) }}"
+transition_role_name: "{{ asset_type_info.role_name | default('transition_' + asset_type) }}"
 
-# 3. Resolve collection (null for local roles)
-transition_role_collection: "{{ asset_type_info.role_collection | default(asset_type_config.default_collection) }}"
-
-# 4. Execute role with collection support
+# 3. Execute role (collection info already included in role_name)
 - name: "Execute transition actions"
   include_role:
     name: "{{ transition_role_name }}"
-    collection: "{{ transition_role_collection if transition_role_collection is not none else omit }}"
 ```
 
 #### 16.4 Global Configuration Settings

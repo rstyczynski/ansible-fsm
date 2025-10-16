@@ -16,6 +16,14 @@ Implementation covers following concepts:
 
 5. Transition logic is owned by asset owning team (separation of concerns).
 
+## Conclusions
+
+1. FSM does not run any business related work
+
+2. FSM may emit events to trigger actual work
+
+3. FSM should not be implemented in Ansible
+
 ## Quick Start
 
 The repository includes several bash test scripts in the root directory:

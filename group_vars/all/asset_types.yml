@@ -5,35 +5,18 @@
 # Asset type definitions with role mappings
 asset_types:
   service:
-    role_name: transition_service
-    role_collection: null  # null for local roles
-    default_timeout: 300
+    role_name: transition_service  # local role
+
   node:
-    role_name: transition_node
-    role_collection: platformteam.transition  # collection namespace
-    default_timeout: 300
-    disable_state_guard: true
-    disable_pre_state_guard: true    # Allow dependency start logic to run
-    disable_post_state_guard: false  # Still validate final state
+    role_name: platformteam.transition.transition_node  # collection.role format
+
   os:
-    role_name: transition_os
-    role_collection: platformteam.transition  # collection namespace
-    default_timeout: 300
-    disable_pre_state_guard: false   # Validate before transition
-    disable_post_state_guard: false  # Validate after transition
+    role_name: platformteam.transition.transition_os  # collection.role format
+
   app:
-    role_name: transition_app
-    role_collection: appteam.transition  # collection namespace
-    default_timeout: 300
-    disable_pre_state_guard: false   # Validate before transition
-    disable_post_state_guard: false # Validate after transition
+    role_name: appteam.transition.transition_app  # collection.role format
 
   app_type2:
-    role_name: transition_app_type2
-    role_collection: null  # null for local roles
+    role_name: transition_app_type2  # local role
     default_timeout: 300
 
-# Global asset type settings
-asset_type_config:
-  # Validation settings
-  validate_role_existence: true

@@ -30,15 +30,14 @@
     component_state_machine: "{{ state_machines[component_state_machine_spec] }}"
     asset_type_info: "{{ asset_types[asset_type] | default({}) }}"
     transition_role_name: "{{ asset_types[asset_type].role_name | default('transition_' + asset_type) }}"
-    transition_role_collection: "{{ asset_types[asset_type].role_collection | default('') }}"
     transition_role_timeout: "{{ asset_types[asset_type].default_timeout | default(300) }}"
   tags:
     - always
     - variable_isolation
 
-- name: "State Change: Build full role name with isolation"
+- name: "State Change: Use role name directly (collection info already included)"
   ansible.builtin.set_fact:
-    transition_role_full_name: "{{ (transition_role_collection + '.' + transition_role_name) if transition_role_collection != '' else transition_role_name }}"
+    transition_role_full_name: "{{ transition_role_name }}"
   tags:
     - always
     - variable_isolation

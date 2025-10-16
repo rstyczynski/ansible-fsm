@@ -10,10 +10,10 @@
   roles:
     - role: toolchain.fsm.state_change
       vars:
-        component_name: "node1"
+        component_name: "app1"
     - role: toolchain.fsm.state_change
       vars:
-        component_name: "app1"
+        component_name: "node1"
 
   tasks:
   # Display comprehensive state information
