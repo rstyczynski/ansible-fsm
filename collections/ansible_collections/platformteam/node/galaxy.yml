@@ -1,0 +1,13 @@
+namespace: platformteam
+name: node
+version: 1.0.0
+readme: README.md
+authors:
+  - Platform Team
+description: Node platform management collection
+license_file: LICENSE
+tags:
+  - node
+  - platform
+  - management
+dependencies: {}

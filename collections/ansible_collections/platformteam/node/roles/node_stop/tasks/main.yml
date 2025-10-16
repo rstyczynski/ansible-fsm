@@ -1,0 +1,4 @@
+---
+- name: "Node Stop role executed"
+  ansible.builtin.debug:
+    msg: "Hello from Node Stop procedure"

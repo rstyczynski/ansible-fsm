@@ -1,0 +1,21 @@
+- name: Trivial OS Stop Client
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    global_asset_name: "app1"
+    component_name: "{{ global_asset_name }}"
+
+  roles:
+    - role: toolchain.fsm.state_change
+      vars:
+        component_name: "{{ global_asset_name }}"
+        target_state: "MAINTENANCE"
+    
+    # - role: appteam.app1.app_stop
+    # - role: platformteam.linux.os_stop
+
+    # - role: toolchain.fsm.state_change
+    #   vars:
+    #     component_name: "{{ global_asset_name }}"
+    #     target_state: "STOPPED"    

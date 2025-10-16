@@ -17,7 +17,7 @@ state_machines:
     
     transitions:
       CREATED:
-        to: [STARTING, RUNNING, FAILED]
+        to: [MAINTENANCE, STARTING, RUNNING, FAILED]
       STARTING:
         to: [RUNNING, FAILED]
       RUNNING:

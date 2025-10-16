@@ -1,0 +1,13 @@
+namespace: serviceteam
+name: service1
+version: 1.0.0
+readme: README.md
+authors:
+  - Service Team
+description: Service1 service management collection
+license_file: LICENSE
+tags:
+  - service1
+  - service
+  - management
+dependencies: {}

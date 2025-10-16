@@ -19,7 +19,7 @@
 - name: "Transition App Instance - Display transition parameters"
   debug:
     msg:
-      - "Component: app_instance"
+      - "Component: {{ component_name }}"
       - "Current State: {{ current_state }}"
       - "Target State: {{ target_state }}"
       - "Transition Timestamp: {{ transition_timestamp }}"
@@ -42,7 +42,8 @@
 - name: "Transition App Instance - Display transition result"
   debug:
     msg:
-      - "Component: app_instance"
+      - "Component: {{ component_name }}"
+      - "Current State: {{ current_state }}"
       - "Target State: {{ target_state }}"
       - "Transition Success: {{ transition_success }}"
       - "Actions Executed: {{ transition_actions_executed | join(', ') }}"

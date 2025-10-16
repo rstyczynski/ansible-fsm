@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  role_name: node_stop
+  author: Platform Team
+  description: Role for stopping node services
+  company: Platform Team
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: CentOS
+      versions:
+        - 7
+        - 8
+  galaxy_tags:
+    - node
+    - stop
+    - platform
