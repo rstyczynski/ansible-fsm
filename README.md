@@ -11,7 +11,7 @@ Each element is represented by its operational state e.g. running, stopped to en
 1. Node is running when os, and app are running.
 2. Node is stopped when one of os, and app are stopped.
 
-![Node Architecture](doc/images/node.jpg)
+<img src="doc/images/node.jpg" alt="Node Architecture" width="300px">
 
 ## Stopping and starting the system
 
