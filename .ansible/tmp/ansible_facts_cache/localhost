@@ -1,12 +1,15 @@
 {
     "_ansible_facts_gathered": true,
     "ansible_all_ipv4_addresses": [
-        "10.5.9.1"
+        "192.168.0.37"
     ],
     "ansible_all_ipv6_addresses": [
-        "fe80::1473:ce01:a4d5:1cb2%en0",
-        "fe80::88:7dff:feab:d4a1%awdl0",
-        "fe80::88:7dff:feab:d4a1%llw0",
+        "fe80::c57:4d08:5789:acdc%en0",
+        "2a02:a31a:c19c:5400:23:7915:b3d6:ac2e",
+        "2a02:a31a:c19c:5400:58db:3c55:7660:7ba0",
+        "2a02:a31a:c19c:5400::c7f5",
+        "fe80::e0bc:82ff:fe27:170f%awdl0",
+        "fe80::e0bc:82ff:fe27:170f%llw0",
         "fe80::175e:c404:9f14:de64%utun0",
         "fe80::a466:a405:90e9:106e%utun1",
         "fe80::82fd:9073:b71:9e05%utun2",
@@ -123,12 +126,12 @@
         "ipv4": [],
         "ipv6": [
             {
-                "address": "fe80::88:7dff:feab:d4a1%awdl0",
+                "address": "fe80::e0bc:82ff:fe27:170f%awdl0",
                 "prefix": "64",
                 "scope": "0x10"
             }
         ],
-        "macaddress": "02:88:7d:ab:d4:a1",
+        "macaddress": "e2:bc:82:27:17:0f",
         "media": "Unknown",
         "media_select": "autoselect",
         "mtu": "1500",
@@ -164,30 +167,30 @@
         "type": "ether"
     },
     "ansible_date_time": {
-        "date": "2025-10-15",
-        "day": "15",
-        "epoch": "1760551649",
-        "epoch_int": "1760551649",
-        "hour": "20",
-        "iso8601": "2025-10-15T18:07:29Z",
-        "iso8601_basic": "20251015T200729820225",
-        "iso8601_basic_short": "20251015T200729",
-        "iso8601_micro": "2025-10-15T18:07:29.820225Z",
-        "minute": "07",
+        "date": "2025-10-19",
+        "day": "19",
+        "epoch": "1760900909",
+        "epoch_int": "1760900909",
+        "hour": "21",
+        "iso8601": "2025-10-19T19:08:29Z",
+        "iso8601_basic": "20251019T210829191978",
+        "iso8601_basic_short": "20251019T210829",
+        "iso8601_micro": "2025-10-19T19:08:29.191978Z",
+        "minute": "08",
         "month": "10",
         "second": "29",
-        "time": "20:07:29",
+        "time": "21:08:29",
         "tz": "CEST",
         "tz_dst": "CEST",
         "tz_offset": "+0200",
-        "weekday": "Wednesday",
-        "weekday_number": "3",
+        "weekday": "Sunday",
+        "weekday_number": "0",
         "weeknumber": "41",
         "year": "2025"
     },
     "ansible_default_ipv4": {
-        "address": "10.5.9.1",
-        "broadcast": "10.5.15.255",
+        "address": "192.168.0.37",
+        "broadcast": "192.168.0.255",
         "device": "en0",
         "flags": [
             "UP",
@@ -197,14 +200,14 @@
             "SIMPLEX",
             "MULTICAST"
         ],
-        "gateway": "10.5.1.1",
+        "gateway": "192.168.0.1",
         "interface": "en0",
-        "macaddress": "0e:9e:7e:db:7f:83",
+        "macaddress": "8e:da:b8:a4:8d:56",
         "media": "Unknown",
         "media_select": "autoselect",
         "mtu": "1500",
-        "netmask": "255.255.240.0",
-        "network": "10.5.0.0",
+        "netmask": "255.255.255.0",
+        "network": "192.168.0.0",
         "options": [
             "PERFORMNUD",
             "DAD"
@@ -212,15 +215,43 @@
         "status": "active",
         "type": "ether"
     },
-    "ansible_default_ipv6": {},
+    "ansible_default_ipv6": {
+        "address": "fe80::c57:4d08:5789:acdc%en0",
+        "device": "en0",
+        "flags": [
+            "UP",
+            "BROADCAST",
+            "SMART",
+            "RUNNING",
+            "SIMPLEX",
+            "MULTICAST"
+        ],
+        "gateway": "fe80::ce58:30ff:fe0a:c405%en0",
+        "interface": "en0",
+        "macaddress": "8e:da:b8:a4:8d:56",
+        "media": "Unknown",
+        "media_select": "autoselect",
+        "mtu": "1500",
+        "options": [
+            "PERFORMNUD",
+            "DAD"
+        ],
+        "prefix": "64",
+        "status": "active",
+        "type": "ether"
+    },
     "ansible_distribution": "MacOSX",
     "ansible_distribution_major_version": "15",
     "ansible_distribution_release": "24.6.0",
     "ansible_distribution_version": "15.7.1",
     "ansible_dns": {
         "nameservers": [
-            "77.109.128.2",
-            "213.144.129.20"
+            "2a02:a302:0:1::10",
+            "2a02:a302:0:1::100",
+            "192.168.0.1"
+        ],
+        "search": [
+            "play.pl"
         ]
     },
     "ansible_domain": "0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa",
@@ -238,19 +269,31 @@
         ],
         "ipv4": [
             {
-                "address": "10.5.9.1",
-                "broadcast": "10.5.15.255",
-                "netmask": "255.255.240.0",
-                "network": "10.5.0.0"
+                "address": "192.168.0.37",
+                "broadcast": "192.168.0.255",
+                "netmask": "255.255.255.0",
+                "network": "192.168.0.0"
             }
         ],
         "ipv6": [
             {
-                "address": "fe80::1473:ce01:a4d5:1cb2%en0",
+                "address": "fe80::c57:4d08:5789:acdc%en0",
+                "prefix": "64"
+            },
+            {
+                "address": "2a02:a31a:c19c:5400:23:7915:b3d6:ac2e",
+                "prefix": "64"
+            },
+            {
+                "address": "2a02:a31a:c19c:5400:58db:3c55:7660:7ba0",
+                "prefix": "64"
+            },
+            {
+                "address": "2a02:a31a:c19c:5400::c7f5",
                 "prefix": "64"
             }
         ],
-        "macaddress": "0e:9e:7e:db:7f:83",
+        "macaddress": "8e:da:b8:a4:8d:56",
         "media": "Unknown",
         "media_select": "autoselect",
         "mtu": "1500",
@@ -409,10 +452,10 @@
         "type": "ether"
     },
     "ansible_env": {
-        "BUNDLED_DEBUGPY_PATH": "/Users/rstyczynski/.cursor/extensions/ms-python.debugpy-2025.14.0-darwin-arm64/bundled/libs/debugpy",
+        "BUNDLED_DEBUGPY_PATH": "/Users/rstyczynski/.cursor/extensions/ms-python.debugpy-2025.14.1-darwin-arm64/bundled/libs/debugpy",
         "COLORTERM": "truecolor",
         "COMMAND_MODE": "unix2003",
-        "CURSOR_TRACE_ID": "52b1d726da0e4b629facaa44d35c9259",
+        "CURSOR_TRACE_ID": "735d2e6268f84207861006427908174b",
         "GIT_ASKPASS": "/Applications/Cursor.app/Contents/Resources/app/extensions/git/dist/askpass.sh",
         "HOME": "/Users/rstyczynski",
         "HOMEBREW_CELLAR": "/opt/homebrew/Cellar",
@@ -424,22 +467,22 @@
         "LOGNAME": "rstyczynski",
         "MallocNanoZone": "0",
         "ORIGINAL_XDG_CURRENT_DESKTOP": "undefined",
-        "PATH": "/opt/homebrew/opt/openjdk/bin:/Users/rstyczynski/.gem/ruby/2.6.0/bin:/opt/homebrew/bin:/opt/homebrew/opt/go@1.22/bin:/opt/homebrew/opt/openjdk/bin:/opt/homebrew/opt/go@1.20/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/opt/homebrew/opt/openjdk/bin:/Users/rstyczynski/.gem/ruby/2.6.0/bin:/opt/homebrew/opt/go@1.22/bin:/opt/homebrew/opt/go@1.20/bin:/Users/rstyczynski/.cursor/extensions/ms-python.debugpy-2025.14.0-darwin-arm64/bundled/scripts/noConfigScripts",
-        "PWD": "/Users/rstyczynski/Documents/avaloq/day2",
+        "PATH": "/opt/homebrew/opt/openjdk/bin:/Users/rstyczynski/.gem/ruby/2.6.0/bin:/opt/homebrew/bin:/opt/homebrew/opt/go@1.22/bin:/opt/homebrew/opt/openjdk/bin:/opt/homebrew/opt/go@1.20/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/opt/homebrew/opt/openjdk/bin:/Users/rstyczynski/.gem/ruby/2.6.0/bin:/opt/homebrew/opt/go@1.22/bin:/opt/homebrew/opt/go@1.20/bin:/Users/rstyczynski/.cursor/extensions/ms-python.debugpy-2025.14.1-darwin-arm64/bundled/scripts/noConfigScripts",
+        "PWD": "/Users/rstyczynski/projects/ansible_fsm/ansible/playbooks/node",
         "PYDEVD_DISABLE_FILE_VALIDATION": "1",
         "SHELL": "/opt/homebrew/bin/bash",
         "SHLVL": "3",
         "SSH_AUTH_SOCK": "/private/tmp/com.apple.launchd.RScKYi6MQe/Listeners",
         "TERM": "xterm-256color",
         "TERM_PROGRAM": "vscode",
-        "TERM_PROGRAM_VERSION": "1.7.44",
+        "TERM_PROGRAM_VERSION": "1.7.52",
         "TMPDIR": "/var/folders/rt/g188dkwx2rl25f2xnjnqv8hr0000gn/T/",
         "USER": "rstyczynski",
-        "VSCODE_DEBUGPY_ADAPTER_ENDPOINTS": "/Users/rstyczynski/.cursor/extensions/ms-python.debugpy-2025.14.0-darwin-arm64/.noConfigDebugAdapterEndpoints/endpoint-fcb0e9c7a08d9315.txt",
+        "VSCODE_DEBUGPY_ADAPTER_ENDPOINTS": "/Users/rstyczynski/.cursor/extensions/ms-python.debugpy-2025.14.1-darwin-arm64/.noConfigDebugAdapterEndpoints/endpoint-18dcf057c235a2fe.txt",
         "VSCODE_GIT_ASKPASS_EXTRA_ARGS": "",
         "VSCODE_GIT_ASKPASS_MAIN": "/Applications/Cursor.app/Contents/Resources/app/extensions/git/dist/askpass-main.js",
         "VSCODE_GIT_ASKPASS_NODE": "/Applications/Cursor.app/Contents/Frameworks/Cursor Helper (Plugin).app/Contents/MacOS/Cursor Helper (Plugin)",
-        "VSCODE_GIT_IPC_HANDLE": "/var/folders/rt/g188dkwx2rl25f2xnjnqv8hr0000gn/T/vscode-git-6d5103bce3.sock",
+        "VSCODE_GIT_IPC_HANDLE": "/var/folders/rt/g188dkwx2rl25f2xnjnqv8hr0000gn/T/vscode-git-209a118ead.sock",
         "XML_CATALOG_FILES": "/opt/homebrew/etc/xml/catalog",
         "XPC_FLAGS": "0x0",
         "XPC_SERVICE_NAME": "0",
@@ -508,12 +551,12 @@
         "ipv4": [],
         "ipv6": [
             {
-                "address": "fe80::88:7dff:feab:d4a1%llw0",
+                "address": "fe80::e0bc:82ff:fe27:170f%llw0",
                 "prefix": "64",
                 "scope": "0x11"
             }
         ],
-        "macaddress": "02:88:7d:ab:d4:a1",
+        "macaddress": "e2:bc:82:27:17:0f",
         "media": "Unknown",
         "media_select": "autoselect",
         "media_type": "none",
@@ -560,14 +603,14 @@
         "type": "loopback"
     },
     "ansible_loadavg": {
-        "15m": 3.04443359375,
-        "1m": 3.302734375,
-        "5m": 3.08203125
+        "15m": 4.255859375,
+        "1m": 5.10986328125,
+        "5m": 4.85595703125
     },
     "ansible_local": {},
     "ansible_lsb": {},
     "ansible_machine": "arm64",
-    "ansible_memfree_mb": 2804,
+    "ansible_memfree_mb": 5304,
     "ansible_memtotal_mb": 49152,
     "ansible_model": "Mac16,8",
     "ansible_nodename": "Ryszards-MacBook-Pro.local",
@@ -618,7 +661,7 @@
     "ansible_system": "Darwin",
     "ansible_system_capabilities": "N/A",
     "ansible_system_capabilities_enforced": "N/A",
-    "ansible_uptime_seconds": 163790,
+    "ansible_uptime_seconds": 513050,
     "ansible_user_dir": "/Users/rstyczynski",
     "ansible_user_gecos": "Ryszard Styczy\u0144ski",
     "ansible_user_gid": 20,

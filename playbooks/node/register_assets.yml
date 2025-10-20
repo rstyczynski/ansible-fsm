@@ -1,0 +1,39 @@
+- name: Register assets
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Register assets
+      ansible.builtin.include_role:
+        name: toolchain.fsm.asset_register
+      loop: [os1, app1, node1]
+      loop_control:
+        loop_var: asset_register_asset_id
+      vars:
+        asset_register_asset_type: "simple_asset_type.yaml"
+      register: asset_registration_results
+
+    - name: Display registration results
+      ansible.builtin.debug:
+        msg: "{{ asset_register_success }}"
+
+    - name: Process asset post registration steps
+      when: asset_register_success
+      block:
+        - name: Change state to STARTING
+          ansible.builtin.include_role:
+            name: toolchain.fsm.transition
+          loop: [os1, app1, node1]
+          loop_control:
+            loop_var: transition_asset_id
+          vars:
+            transition_to_state: "STARTING"
+
+        - name: Change state to RUNNING
+          ansible.builtin.include_role:
+            name: toolchain.fsm.transition
+          loop: [os1, app1, node1]
+          loop_control:
+            loop_var: transition_asset_id
+          vars:
+            transition_to_state: "RUNNING"

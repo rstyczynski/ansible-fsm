@@ -1,0 +1,47 @@
+- name: Trivial OS Stop Client
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+
+    - name: "Assert Node state"
+      ansible.builtin.include_role:
+        name: toolchain.fsm.state_assert
+      vars:
+        state_assert_asset_id: "node1"
+        state_assert_expected_state: "STOPPING"
+
+    - name: Change state os1, app1 to STOPPING
+      ansible.builtin.include_role:
+        name: toolchain.fsm.transition
+      loop: [os1, app1]
+      loop_control:
+        loop_var: transition_asset_id
+      vars:
+        transition_to_state: "STOPPING"
+
+    #
+    # App and OS Stop
+    #
+    - name: App Stop
+      ansible.builtin.include_role:
+        name: appteam.app1.app_stop
+
+    - name: OS Stop
+      ansible.builtin.include_role:
+        name: platformteam.linux.os_stop
+      vars:
+        os_stop_asset_id: "os1"
+
+
+    #
+    # Change state os1, app1 to STOPPED
+    #
+    - name: Change state os1, app1 to STOPPED
+      ansible.builtin.include_role:
+        name: toolchain.fsm.transition
+      loop: [node1, os1, app1]
+      loop_control:
+        loop_var: transition_asset_id
+      vars:
+        transition_to_state: "STOPPED"

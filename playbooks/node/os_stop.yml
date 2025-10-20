@@ -1,0 +1,9 @@
+- name: OS stop
+  hosts: localhost
+
+  tasks:
+    - name: OS Stop
+      ansible.builtin.include_role:
+        name: platformteam.linux.os_stop
+      vars:
+        os_stop_asset_id: os1

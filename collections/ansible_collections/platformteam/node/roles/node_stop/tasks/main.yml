@@ -1,4 +1,8 @@
 ---
-- name: "Node Stop role executed"
+- name: "Node Stop: role executed"
   ansible.builtin.debug:
     msg: "Hello from Node Stop procedure"
+
+- name: "Node Stop: pause for 5 seconds"
+  ansible.builtin.pause:
+    seconds: 5

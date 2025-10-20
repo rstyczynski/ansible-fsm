@@ -1,3 +1,5 @@
+---
 # Ansible Lint Configuration
-# Set line length limit to 200 characters
-line-length: 200
+# Minimal configuration for ansible-lint
+skip_list: []
+warn_list: []

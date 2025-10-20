@@ -1,0 +1,32 @@
+---
+# Inventory for State-Driven Playbook Framework Testing
+# Simple localhost setup to test state machine concepts
+
+# Local testing only
+localhost:
+  hosts:
+    localhost:
+      ansible_connection: local
+      ansible_python_interpreter: "{{ ansible_playbook_python }}"
+      
+  vars:
+    ansible_user: "{{ ansible_env.USER | default('root') }}"
+    ansible_become: false
+
+# All hosts group variables
+all:
+  vars:
+    # State machine configuration
+    state_machine_config: "{{ state_machine }}"
+    
+    # Custom guard conditions for testing
+    custom_guard_conditions:
+      app_instance:
+        - resource_check
+        - dependency_check
+        - maintenance_window_check
+    
+    # Backup settings
+    backup_enabled: true
+    backup_directory: "./state/backups"
+    backup_retention_days: 30

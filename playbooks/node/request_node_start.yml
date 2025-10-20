@@ -1,0 +1,12 @@
+- name: Request node stop
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+
+    - name: Change state node1 to STARTING
+      ansible.builtin.include_role:
+        name: toolchain.fsm.transition
+      vars:
+        transition_asset_id: "node1"
+        transition_to_state: "STARTING"

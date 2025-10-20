@@ -1,0 +1,47 @@
+---
+
+- name: Check parameters
+  ansible.builtin.validate_argument_spec:
+    argument_spec:
+      state_assert_asset_id:
+        type: str
+        required: true
+        description: "ID of the asset to assert state for"
+      state_assert_expected_state:
+        type: str
+        required: true
+        description: "Expected state to assert for the asset"
+
+- name: Started state assert
+  ansible.builtin.debug:
+    msg: "Required state: {{ state_assert_asset_id }} requires {{ state_assert_expected_state }}"
+
+- name: Get current state of asset
+  ansible.builtin.uri:
+    url: "{{ state_assert_fsm.endpoint }}/api/v1/assets/{{ state_assert_asset_id }}"
+    method: GET
+    headers:
+      Content-Type: "application/json"
+    status_code: 200
+  register: state_assert_current_state
+
+- name: Current state info
+  ansible.builtin.debug:
+    msg: "{{ state_assert_current_state.json.current_state }}"
+
+- name: Extract current state from response
+  ansible.builtin.set_fact:
+    state_assert_actual_state: "{{ state_assert_current_state.json.current_state }}"
+
+- name: Assert current state matches expected
+  ansible.builtin.assert:
+    that:
+      - state_assert_actual_state == state_assert_expected_state
+
+- name: Set role return values
+  ansible.builtin.set_fact:
+    state_assert_success: true
+    state_assert_asset_id: "{{ state_assert_asset_id }}"
+    state_assert_expected_state: "{{ state_assert_expected_state }}"
+    state_assert_actual_state: "{{ state_assert_actual_state }}"
+    state_assert_message: "State assertion successful: {{ state_assert_asset_id }} is in state '{{ state_assert_actual_state }}'"

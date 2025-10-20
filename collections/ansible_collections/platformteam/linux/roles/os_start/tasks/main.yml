@@ -1,0 +1,9 @@
+---
+- name: "OS Start role executed"
+  ansible.builtin.debug:
+    msg: "Hello from OS Start procedure"
+
+- name: "Node Start: pause for 5 seconds"
+  ansible.builtin.pause:
+    seconds: 5
+

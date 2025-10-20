@@ -1,13 +1,11 @@
+---
 namespace: appteam
 name: app1
 version: 1.0.0
 readme: README.md
 authors:
   - App Team
-description: App1 application management collection
+description: Collection for managing the App1 application
 license_file: LICENSE
-tags:
-  - app1
-  - application
-  - management
 dependencies: {}
+repository: https://github.com/appteam/app1

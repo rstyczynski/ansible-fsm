@@ -1,0 +1,54 @@
+---
+
+- name: Check parameters
+  ansible.builtin.validate_argument_spec:
+    argument_spec:
+      asset_register_asset_id:
+        type: str
+        required: true
+        description: "ID of the asset to register"
+      asset_register_asset_type:
+        type: str
+        required: true
+        description: "Type of the asset to register"
+
+- name: Asset register to FSM
+  ansible.builtin.debug:
+    msg: "Request {{ asset_register_asset_id }} as {{ asset_register_asset_type }}"
+
+- name: Check if asset already registered
+  ansible.builtin.uri:
+    url: "{{ fsm.endpoint }}/api/v1/assets/{{ asset_register_asset_id }}"
+    method: GET
+    headers:
+      Content-Type: "application/json"
+    status_code: [200, 404]
+  register: asset_register_registration_result
+
+- name: Debug registration result
+  ansible.builtin.debug:
+    msg: "Registration result: {{ asset_register_registration_result.status }}"
+
+- name: Request registration to FSM
+  when: asset_register_registration_result.status != 200
+  ansible.builtin.uri:
+    url: "{{ fsm.endpoint }}/api/v1/assets"
+    method: POST
+    body: "{{ {'instance_id': asset_register_asset_id, 'asset_type': asset_register_asset_type} | to_json }}"
+    headers:
+      Content-Type: "application/json"
+    status_code: 201
+  register: asset_register_result
+  failed_when: false
+
+- name: Check registration result
+  when: asset_register_registration_result.status != 200
+  ansible.builtin.assert:
+    that:
+      - asset_register_result is not defined or asset_register_result.status == 201
+
+- name: Set role return values
+  ansible.builtin.set_fact:
+    asset_register_success: "{{ asset_register_registration_result.status == 404 }}"
+    asset_register_asset_id: "{{ asset_register_asset_id }}"
+    asset_register_asset_type: "{{ asset_register_asset_type }}"

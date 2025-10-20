@@ -1,0 +1,44 @@
+- name: Trivial OS Start Client
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+
+    - name: "Assert Node state"
+      ansible.builtin.include_role:
+        name: toolchain.fsm.state_assert
+      vars:
+        state_assert_asset_id: "node1"
+        state_assert_expected_state: "STARTING"
+
+    - name: Change state os1, app1 to STARTING
+      ansible.builtin.include_role:
+        name: toolchain.fsm.transition
+      loop: [os1, app1]
+      loop_control:
+        loop_var: transition_asset_id
+      vars:
+        transition_to_state: "STARTING"
+
+    #
+    # App and OS Start
+    #
+    - name: OS Start
+      ansible.builtin.include_role:
+        name: platformteam.linux.os_start
+
+    - name: App Start
+      ansible.builtin.include_role:
+        name: appteam.app1.app_start
+
+    #
+    # Change state os1, app1 to RUNNING
+    #
+    - name: Change state os1, app1 to RUNNING
+      ansible.builtin.include_role:
+        name: toolchain.fsm.transition
+      loop: [node1, os1, app1]
+      loop_control:
+        loop_var: transition_asset_id
+      vars:
+        transition_to_state: "RUNNING"

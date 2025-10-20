@@ -1,0 +1,44 @@
+---
+
+- name: Check parameters
+  ansible.builtin.validate_argument_spec:
+    argument_spec:
+      transition_asset_id:
+        type: str
+        required: true
+        description: "ID of the asset to transition"
+      transition_to_state:
+        type: str
+        required: true
+        description: "State to transition to"
+
+- name: Started transition
+  ansible.builtin.debug:
+    msg: "Request State: {{ transition_asset_id }} to {{ transition_to_state }}"
+
+- name: Get current state of asset
+  ansible.builtin.uri:
+    url: "{{ fsm.endpoint }}/api/v1/assets/{{ transition_asset_id }}"
+    method: GET
+    headers:
+      Content-Type: "application/json"
+    status_code: 200
+  register: transition_current_state
+
+- name: Debug current state
+  ansible.builtin.debug:
+    msg: "Current state: {{ transition_current_state }}"
+
+- name: Extract current state from JSON response
+  ansible.builtin.set_fact:
+    transition_current_state: "{{ transition_current_state.json.current_state }}"
+
+- name: Request transition to FSM
+  ansible.builtin.uri:
+    url: "{{ fsm.endpoint }}/api/v1/assets/{{ transition_asset_id }}/transition"
+    method: POST
+    body: "{{ {'to_state': transition_to_state} | to_json }}"
+    headers:
+      Content-Type: "application/json"
+    status_code: 200
+  when: transition_current_state != transition_to_state

@@ -2,3 +2,7 @@
 - name: "App Stop role executed"
   ansible.builtin.debug:
     msg: "Hello from App Stop procedure"
+
+- name: "Node Stop: pause for 5 seconds"
+  ansible.builtin.pause:
+    seconds: 5

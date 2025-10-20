@@ -1,0 +1,11 @@
+---
+# Default variables for state_assert role
+# These variables can be overridden in playbooks or inventory
+
+# Required parameters
+# asset_id: ""  # ID of the asset to assert state for
+# expected_state: ""  # Expected state to assert
+
+# Optional parameters
+state_assert_fsm:
+  endpoint: "http://localhost:8080"  # FSM API endpoint
