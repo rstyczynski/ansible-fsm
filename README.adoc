@@ -1,11 +1,15 @@
 = Asset operation with state guard
 
+:toc:
+:toclevels: 3
+
+== Overview
+
 This document explains how to process asset stop and start operations in multi-layer system managed by multiple teams. As an example, consider a system composed of an operating system and an application installed on a service node. The node is a logical entity that groups  together resources accessible at single access address. Application may be deployed in a cluster across multiple nodes.
 
 The application is owned by application team (SaaS) and node and the operating system is owned by platform team (PaaS).
 
-:toc:
-:toclevels: 3
+
 
 == Operational state
 
