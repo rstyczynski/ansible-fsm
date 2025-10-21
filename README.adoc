@@ -111,7 +111,7 @@ To model the exemplary system, we need to register three assets: node, OS, and a
 ansible-playbook playbooks/fsm/register_assets.yml
 ----
 
-Asset registration created two results: (1) the state guard is now aware of assets, and (2) Ansible EDA playbooks are triggered by state-triggered events.
+Asset registration created two effects: (1) the state guard is now aware of assets's states, and (2) Ansible EDA playbooks are triggered by state-triggered events.
 
 === Assets
 
