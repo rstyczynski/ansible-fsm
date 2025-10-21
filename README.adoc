@@ -356,6 +356,22 @@ The operating system (host) is an element of a software stack that is installed 
 ansible-playbook playbooks/node/request_node_stop.yml 
 ----
 
+[source,yaml]
+----
+- name: Request node stop
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+
+    - name: Change state node1 to STOPPING
+      ansible.builtin.include_role:
+        name: toolchain.fsm.transition
+      vars:
+        transition_asset_id: "node1"
+        transition_to_state: "STOPPING"
+----
+
 Having the node in STOPPING state, the operator can stop the OS and application.
 
 [source,bash]
@@ -363,9 +379,60 @@ Having the node in STOPPING state, the operator can stop the OS and application.
 ansible-playbook playbooks/node/node_stop.yml 
 ----
 
-Now the node is stopped. Users are informed that service is unavailable.
+Now the node is stopped. By the state guards and wehook notificationm, users are informed that service is unavailable. Let's take a look at the playbook:
 
-This is a theoretical scenario that in reality is, of course, more complex. The point is that OS operations are covered by an Ansible role that validates the resource state. The stop is not possible without a proper context.
+[source,yaml]
+----
+- name: Trivial OS Stop Client
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+
+    - name: "Assert Node state"
+      ansible.builtin.include_role:
+        name: toolchain.fsm.state_assert
+      vars:
+        state_assert_asset_id: "node1"
+        state_assert_expected_state: "STOPPING"
+
+    - name: Change state os1, app1 to STOPPING
+      ansible.builtin.include_role:
+        name: toolchain.fsm.transition
+      loop: [os1, app1]
+      loop_control:
+        loop_var: transition_asset_id
+      vars:
+        transition_to_state: "STOPPING"
+
+    #
+    # App and OS Stop
+    #
+    - name: App Stop
+      ansible.builtin.include_role:
+        name: appteam.app1.app_stop
+
+    - name: OS Stop
+      ansible.builtin.include_role:
+        name: platformteam.linux.os_stop
+      vars:
+        os_stop_asset_id: "os1"
+
+
+    #
+    # Change state os1, app1 to STOPPED
+    #
+    - name: Change state os1, app1 to STOPPED
+      ansible.builtin.include_role:
+        name: toolchain.fsm.transition
+      loop: [node1, os1, app1]
+      loop_control:
+        loop_var: transition_asset_id
+      vars:
+        transition_to_state: "STOPPED"
+----
+
+This is a theoretical scenario that in reality is, of course, more complex. The point is that OS operations are covered by an Ansible role that validates the resource state. The stop is not possible without a proper context. Presented node stop operation is owned by platform team who controls the node and operating system.
 
 == Starting the system
 
