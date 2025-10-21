@@ -8,8 +8,6 @@ This document explains how to process asset stop and start operations in multi-l
 
 The application is owned by application team (SaaS) and node and the operating system is owned by platform team (PaaS).
 
-
-
 == Operational state
 
 Each element is represented by its operational state e.g. running, stopped to enumerate only basic two. Moreover node is represented by state degraded to indicate work on limited number of nodes. Moreover two simple rules are in place:
@@ -291,7 +289,7 @@ During this initial phase of the exercise you just learned critical elements of 
 
 . Event Driven Ansible to invoke playbooks via HTTP request
 
-== System stop
+== Stopping the system
 
 After initial registration with synthetic start we would like to stop the system. Operator uses os_stop role provided by a platform team. Note that for simplicity playbook works on a `localhost` and stop action is just a pause for 5 seconds.
 
