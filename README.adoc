@@ -430,6 +430,8 @@ For a fully managed Ansible runtime with policy, inventory, scheduling, and anal
 
 . Event Driven Ansible to invoke playbooks via HTTP request, what may be covered by GitHub workflow or Ansible Automation Platform.
 
-. Finite State Machine is not an orchestration engine (Turing Machine). It covers very specialized function to control asset's state, however is not meant to control the logic flow.
+. Finite State Machine (FSM) is not an orchestration engine (Turing Machine). It covers very specialized function to control asset's state, however is not meant to control the logic flow.
 
 . Orchestration engine is another capability that is able to control the logic flow. It cooperates with FSM to control the logic flow based on the state of the assets.
+
+. Automata theory defines FSM and TM (Turing Machine) as  models on different levels of abstraction. TM may implement FSM, but FSM is not able to implement TM.
