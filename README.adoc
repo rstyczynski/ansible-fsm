@@ -416,7 +416,7 @@ Alternatively, you can invoke GitHub Actions via REST to run playbooks in a mana
 
 For a fully managed Ansible runtime with policy, inventory, scheduling, and analytics, consider Red Hat Ansible Automation Platform (formerly Tower).
 
-Key takeaways:
+=== Key takeaways
 
 . State Guard process takes care of state transitions acting as a guardian element
 
@@ -431,3 +431,5 @@ Key takeaways:
 . Event Driven Ansible to invoke playbooks via HTTP request, what may be covered by GitHub workflow or Ansible Automation Platform.
 
 . Finite State Machine is not an orchestration engine (Turing Machine). It covers very specialized function to control asset's state, however is not meant to control the logic flow.
+
+. Orchestration engine is another capability that is able to control the logic flow. It cooperates with FSM to control the logic flow based on the state of the assets.
