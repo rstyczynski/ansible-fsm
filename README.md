@@ -407,10 +407,10 @@ Key takeaways:
 
 3. Ansible teams' owned roles uses toolchain.fsm to protect itself from state related mistakes
 
-3. Webhooks informs external processes about reaching or leaving a state - good for notification
+4. Webhooks informs external processes about reaching or leaving a state - good for notification
 
-4. Webhook is not aware of transition (from->to) what disables it from triggering an unambiguous actions; failed->running is a different action that stopped->running.  
+5. Webhook is not aware of transition (from->to) what disables it from triggering an unambiguous actions; failed->running is a different action that stopped->running.  
 
-5. Event Driven Ansible to invoke playbooks via HTTP request, what may be covered by GitHub workflow or Ansible Automation Platform.
+6. Event Driven Ansible to invoke playbooks via HTTP request, what may be covered by GitHub workflow or Ansible Automation Platform.
 
-6. Finite State Machine is not an orchestration engine (Turing Machine). It covers very specialized function to control asset's state, however is not meant to control the logic flow.
+7. Finite State Machine is not an orchestration engine (Turing Machine). It covers very specialized function to control asset's state, however is not meant to control the logic flow.
