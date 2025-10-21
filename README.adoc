@@ -495,15 +495,15 @@ Alternatively, you can invoke GitHub Actions via REST to run playbooks in a mana
 
 For a fully managed Ansible runtime with policy, inventory, scheduling, and analytics, consider Red Hat Ansible Automation Platform (formerly Tower).
 
-=== Key takeaways
+== Key takeaways
 
-==== State Machine
+=== State Machine
 
 . State Guard process (FSM) takes care of state transitions acting as a guardian element
 
 . State Guard should be extended by state guards to enforce business rules like maintenance window, dependencies, etc. The critical is dependency what will make it possible to model `service/nodes/resources` relationship.
 
-==== Ansible roles
+=== Ansible roles
 
 . Ansible toolchain.fsm roles interact with the state guard via REST API
 
@@ -511,7 +511,7 @@ For a fully managed Ansible runtime with policy, inventory, scheduling, and anal
 
 . Ansible role provides a convenient way to separate operational responsibility belonging to different teams.
 
-==== Webhooks
+=== Webhooks
 
 . Webhooks inform external processes about reaching or leaving a state — good for notification
 
@@ -519,7 +519,7 @@ For a fully managed Ansible runtime with policy, inventory, scheduling, and anal
 
 . Event Driven Ansible to invoke playbooks via HTTP request, which may be covered by GitHub workflow or Ansible Automation Platform.
 
-==== Finite State Machine (FSM) and Turing Machine (orchestration engine)
+=== Finite State Machine (FSM) and Turing Machine (orchestration engine)
 
 . Finite State Machine (FSM) is not an orchestration engine (Turing Machine). It covers a very specialized function to control assets' state; however, it is not meant to control the logic flow.
 
