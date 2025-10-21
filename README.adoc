@@ -92,11 +92,15 @@ Ansible rulebook starts silently. You will see incoming events.
 
 Based on the state rules, the platform team must always validate both the node and application states before stopping the operating system. This rule prevents application data corruption that could result from an abrupt (hard) stop. In this case, the node depends on the application, and the stop process relies on the node's state. Technical teams may proceed only when the node's state is STOPPING. The node moves to STOPPED when both the OS and app are in STOPPED state.
 
+----
 Node (STOPPED) → APP (STOPPED) → OS (STOPPED)
+----
 
 Starting the system follows the reverse order. In this case, the node depends on the application's state, which in turn depends on the operating system's state — yet the overall control remains at the node level. When the node's state moves to STARTING, the operating system first transitions to RUNNING, followed by the application moving to RUNNING as well.
 
+----
 OS (RUNNING) → APP (RUNNING) → NODE (RUNNING)
+----
 
 == Asset registration
 
