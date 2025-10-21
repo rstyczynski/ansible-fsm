@@ -4,9 +4,9 @@
 
 == Overview
 
-This document explains how to process asset `stop`` and `start`` operations in a multi-layer application managed by multiple teams, where the application is owned by the application team (SaaS) and the node and operating system are owned by the platform team (PaaS).
+This document explains how to process asset `stop` and `start` operations in a multi-layer application managed by multiple teams, where the application is owned by the application team (SaaS) and the node and operating system are owned by the platform team (PaaS).
 
-As an example, consider a system composed of an operating system and an application installed on a service node. The node is a logical entity that groups together resources accessible at a single access address. Applications may be deployed in a cluster across multiple nodes. Fro the sake of this exercise, we will model the system as a single node with a single application and a single operating system. The exercise is supported by a state guard, that implements finite state machine and an Ansible EDA playbook to trigger Ansible Playbooks by state machine events.
+As an example, consider a system composed of an operating system and an application installed on a service node. The node is a logical entity that groups together resources accessible at a single access address. Applications may be deployed in a cluster across multiple nodes. For the sake of this exercise, we will model the system as a single node with a single application and a single operating system. The exercise is supported by a state guard, that implements finite state machine and an Ansible EDA playbook to trigger Ansible Playbooks by state machine events.
 
 
 == Operational state
@@ -93,13 +93,13 @@ Ansible rulebook starts silently. You will see incoming events.
 Based on the state rules, the platform team must always validate both the node and application states before stopping the operating system. This rule prevents application data corruption that could result from an abrupt (hard) stop. In this case, the node depends on the application, and the stop process relies on the node's state. Technical teams may proceed only when the node's state is STOPPING. The node moves to STOPPED when both the OS and app are in STOPPED state.
 
 ----
-Node (STOPPED) → APP (STOPPED) → OS (STOPPED)
+Node (is in STOPPED state) → APP (is in STOPPED state) → OS (is in STOPPED state)
 ----
 
 Starting the system follows the reverse order. In this case, the node depends on the application's state, which in turn depends on the operating system's state — yet the overall control remains at the node level. When the node's state moves to STARTING, the operating system first transitions to RUNNING, followed by the application moving to RUNNING as well.
 
 ----
-OS (RUNNING) → APP (RUNNING) → NODE (RUNNING)
+OS (is in RUNNING state) → APP (is in RUNNING state) → NODE (is in RUNNING state)
 ----
 
 == Asset registration
@@ -379,7 +379,7 @@ Having the node in STOPPING state, the operator can stop the OS and application.
 ansible-playbook playbooks/node/node_stop.yml 
 ----
 
-Now the node is stopped. By the state guards and wehook notificationm, users are informed that service is unavailable. Let's take a look at the playbook:
+Now the node is stopped. By the state guards and webhook notification, users are informed that service is unavailable. Let's take a look at the playbook:
 
 [source,yaml]
 ----
@@ -513,7 +513,7 @@ For a fully managed Ansible runtime with policy, inventory, scheduling, and anal
 
 . Event Driven Ansible to invoke playbooks via HTTP request, which may be covered by GitHub workflow or Ansible Automation Platform.
 
-. Finite State Machine (FSM) is not an orchestration engine (Turing Machine). It covers a very specialized function to control asset's state; however, it is not meant to control the logic flow.
+. Finite State Machine (FSM) is not an orchestration engine (Turing Machine). It covers a very specialized function to control assets' state; however, it is not meant to control the logic flow.
 
 . Orchestration engine is another capability that is able to control the logic flow. It cooperates with FSM to control the logic flow based on the state of the assets.
 
