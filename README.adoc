@@ -111,7 +111,7 @@ To model the exemplary system, we need to register three assets: node, OS, and a
 ansible-playbook playbooks/fsm/register_assets.yml
 ----
 
-Asset registration created two effects: (1) the state guard is now aware of assets's states, and (2) Ansible EDA playbooks are triggered by state-triggered events.
+Asset registration created two effects: (1) the state guard is now aware of assets' states, and (2) Ansible EDA playbooks are triggered by state-triggered events.
 
 === Assets
 
@@ -325,7 +325,7 @@ PLAY RECAP *********************************************************************
 localhost                  : ok=9    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
 ----
 
-Your action is stopped by guard build into the os_stop role, that requires proper state before actual stop. Operator tries to enforce STOPPED state by hacking state guard.
+Your action is stopped by a guard built into the os_stop role, that requires proper state before actual stop. Operator tries to enforce STOPPED state by hacking state guard.
 
 [source,bash]
 ----
@@ -336,7 +336,7 @@ curl -X POST http://localhost:8080/api/v1/assets/os1/transition \
   }'
 ----
 
-Again his action is rejected; this time by a state guard.
+Again this action is rejected; this time by a state guard.
 
 [source,json]
 ----
@@ -501,7 +501,7 @@ For a fully managed Ansible runtime with policy, inventory, scheduling, and anal
 
 . State Guard process (FSM) takes care of state transitions acting as a guardian element
 
-. State Guard should be extended by state guards to enforce business rules like maintenance window, dependencies, etc. The critical is dependency what will make it possible to model `service/nodes/resources` relationship.
+. State Guard should be extended by state guards to enforce business rules like maintenance window, dependencies, etc. The critical aspect is dependency, which will make it possible to model `service/nodes/resources` relationship.
 
 === Ansible roles
 
@@ -521,7 +521,7 @@ For a fully managed Ansible runtime with policy, inventory, scheduling, and anal
 
 === Finite State Machine (FSM) and Turing Machine (orchestration engine)
 
-. Finite State Machine (FSM) is not an orchestration engine (Turing Machine). It covers a very specialized function to control assets' state; however, it is not meant to control the logic flow.
+. Finite State Machine (FSM) is not an orchestration engine (Turing Machine). It covers a very specialized function to control assets' states; however, it is not meant to control the logic flow.
 
 . Orchestration engine is another capability that is able to control the logic flow. It cooperates with FSM to control the logic flow based on the state of the assets.
 
