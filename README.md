@@ -273,7 +273,7 @@ localhost                  : ok=1    changed=0    unreachable=0    failed=0    s
 
 During this initial phase of the exercise you just learned critical elements of the system:
 
-1. State Guard process that takes care of state transitions acting a guardian element
+1. State Guard process that takes care of state transitions acting as a guardian element
 
 2. Ansible toolchain.fsm roles to interact with the state guard via REST API
 
@@ -401,11 +401,16 @@ For a fully managed Ansible runtime with policy, inventory, scheduling, and anal
 
 Key takeaways:
 
-1. Logic‑driven FSM — Playbooks express intent; the State Guard validates and authorizes transitions, so automation cannot bypass policy.
-2. Webhook bridge — Validated transitions are emitted as events to Ansible EDA, enabling reactive, near‑real‑time orchestration.
-3. Transition‑aware actions — Prefer handling on state entry/exit and, where needed, on specific from→to transitions to avoid ambiguous side effects.
-4. Safety and audit — Guard rails prevent illegal ordering; every decision is traceable via FSM history, logs, and PRs.
-5. Operational choices — EDA offers low‑latency eventing; GitHub Actions provides managed CI with audit/RBAC; AAP delivers a fully managed Ansible control plane.
-6. Scalability — The pattern scales from single hosts to fleets and layered stacks (IaaS → PaaS → SaaS) with clear ownership boundaries.
+1. State Guard process takes care of state transitions acting as a guardian element
 
-This architecture bridges procedural automation with declarative state control — achieving governed autonomy, where Ansible executes freely within the safety rails of the FSM.
+2. Ansible toolchain.fsm roles interacts with the state guard via REST API
+
+3. Ansible teams' owned roles uses toolchain.fsm to protect itself from state related mistakes
+
+3. Webhooks informs external processes about reaching or leaving a state - good for notification
+
+4. Webhook is not aware of transition (from->to) what disables it from triggering an unambiguous actions; failed->running is a different action that stopped->running.  
+
+5. Event Driven Ansible to invoke playbooks via HTTP request, what may be covered by GitHub workflow or Ansible Automation Platform.
+
+6. Finite State Machine is not an orchestration engine (Turing Machine). It covers very specialized function to control asset's state, however is not meant to control the logic flow.
