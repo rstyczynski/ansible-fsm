@@ -1,6 +1,6 @@
 = Asset operation with state guard
 :toc:
-:toclevels: 3
+:toclevels: 4
 
 == Overview
 
@@ -497,9 +497,13 @@ For a fully managed Ansible runtime with policy, inventory, scheduling, and anal
 
 === Key takeaways
 
-. State Guard process takes care of state transitions acting as a guardian element
+==== State Machine
+
+. State Guard process (FSM) takes care of state transitions acting as a guardian element
 
 . State Guard should be extended by state guards to enforce business rules like maintenance window, dependencies, etc. The critical is dependency what will make it possible to model `service/nodes/resources` relationship.
+
+==== Ansible roles
 
 . Ansible toolchain.fsm roles interact with the state guard via REST API
 
@@ -507,11 +511,15 @@ For a fully managed Ansible runtime with policy, inventory, scheduling, and anal
 
 . Ansible role provides a convenient way to separate operational responsibility belonging to different teams.
 
+==== Webhooks
+
 . Webhooks inform external processes about reaching or leaving a state — good for notification
 
 . Webhook is not aware of transition (from→to), which disables it from triggering unambiguous actions; failed→running is a different action than stopped→running.  
 
 . Event Driven Ansible to invoke playbooks via HTTP request, which may be covered by GitHub workflow or Ansible Automation Platform.
+
+==== Finite State Machine (FSM) and Turing Machine (TM)
 
 . Finite State Machine (FSM) is not an orchestration engine (Turing Machine). It covers a very specialized function to control assets' state; however, it is not meant to control the logic flow.
 
