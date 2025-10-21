@@ -519,7 +519,7 @@ For a fully managed Ansible runtime with policy, inventory, scheduling, and anal
 
 . Event Driven Ansible to invoke playbooks via HTTP request, which may be covered by GitHub workflow or Ansible Automation Platform.
 
-==== Finite State Machine (FSM) and Turing Machine (TM)
+==== Finite State Machine (FSM) and Turing Machine (orchestration engine)
 
 . Finite State Machine (FSM) is not an orchestration engine (Turing Machine). It covers a very specialized function to control assets' state; however, it is not meant to control the logic flow.
 
