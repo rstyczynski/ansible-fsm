@@ -15,8 +15,8 @@
   ansible.builtin.include_role:
     name: toolchain.fsm.state_assert
   vars:
-    asset_id: "{{ os_stop_asset_id }}"
-    expected_state: "STOPPING"
+    state_assert_asset_id: "{{ os_stop_asset_id }}"
+    state_assert_expected_state: "STOPPING"
 
 - name: "OS Stop: pause for 5 seconds"
   ansible.builtin.pause:

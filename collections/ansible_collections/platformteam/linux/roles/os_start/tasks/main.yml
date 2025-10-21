@@ -6,4 +6,3 @@
 - name: "Node Start: pause for 5 seconds"
   ansible.builtin.pause:
     seconds: 5
-
