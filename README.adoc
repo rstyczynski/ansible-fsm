@@ -1,5 +1,4 @@
 = Asset operation with state guard
-
 :toc:
 :toclevels: 3
 
