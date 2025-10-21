@@ -4,41 +4,41 @@
 
 == Overview
 
-This document explains how to process asset stop and start operations in multi-layer system managed by multiple teams. As an example, consider a system composed of an operating system and an application installed on a service node. The node is a logical entity that groups  together resources accessible at single access address. Application may be deployed in a cluster across multiple nodes.
+This document explains how to process asset stop and start operations in a multi-layer system managed by multiple teams. As an example, consider a system composed of an operating system and an application installed on a service node. The node is a logical entity that groups together resources accessible at a single access address. Applications may be deployed in a cluster across multiple nodes.
 
-The application is owned by application team (SaaS) and node and the operating system is owned by platform team (PaaS).
+The application is owned by the application team (SaaS) and the node and operating system are owned by the platform team (PaaS).
 
 == Operational state
 
-Each element is represented by its operational state e.g. running, stopped to enumerate only basic two. Moreover node is represented by state degraded to indicate work on limited number of nodes. Moreover two simple rules are in place:
+Each element is represented by its operational state, e.g., running or stopped, to enumerate only the basic two. Moreover, a node is represented by the degraded state to indicate work on a limited number of nodes. Two simple rules are in place:
 
-. Node is running when os, and app are running.
-. Node is stopped when one of os, and app are stopped.
+. Node is running when the OS and app are running.
+. Node is stopped when one of the OS or app is stopped.
 
 image::doc/images/node.jpg[Node Architecture,width=300]
 
 == Stopping and starting the system
 
-Based on the state rules, the platform team must always validate both the node and application states before stopping the operating system. This rule prevents application data corruption that could result from an abrupt (hard) stop. In this case, the node depends on the application that stop process relays on node's state. Technical teams may proceed only when node's state is STOPPING. The node moves to STOPPED when both os and app are in STOPPED state.
+Based on the state rules, the platform team must always validate both the node and application states before stopping the operating system. This rule prevents application data corruption that could result from an abrupt (hard) stop. In this case, the node depends on the application, and the stop process relies on the node's state. Technical teams may proceed only when the node's state is STOPPING. The node moves to STOPPED when both the OS and app are in STOPPED state.
 
 Starting the system follows the reverse order. In this case, the node depends on the application's state, which in turn depends on the operating system's state — yet the overall control remains at the node level. When the node's state moves to STARTING, the operating system first transitions to RUNNING, followed by the application moving to RUNNING as well.
 
-== State guard
+== State Guard
 
 The resource state is modeled using the finite state machine (FSM) paradigm, which defines the allowed flow of state changes. This model enables the implementation of a state guard service — a mechanism that prevents critical operations from being executed at inappropriate times (for example, stopping a system that is currently in production).
 
 image::doc/images/fsm.jpg[Finite State Machine]
 
-== Start State Guard
+=== Starting State Guard
 
-The State Guard is hosted on a GitHub and is freely available. Clone it to get the code.
+The State Guard is hosted on GitHub and is freely available. Clone it to get the code.
 
 [source,bash]
 ----
 git clone https://github.com/rstyczynski/state_guard
 ----
 
-The State Guard guard comes with CLI and REST API. For this exercise we will use REST version.
+The State Guard comes with CLI and REST API. For this exercise, we will use the REST version.
 
 [source,bash]
 ----
@@ -46,7 +46,7 @@ cd state_guard
 ./bin/api --port 8080 --db data/demo.db --asset-dir examples
 ----
 
-Start is manifested on a screen with number of messages.
+Start is manifested on a screen with a number of messages.
 
 ----
 2025/10/20 16:22:05 Initializing storage: data/demo.db
@@ -71,11 +71,11 @@ Start is manifested on a screen with number of messages.
 2025/10/20 16:22:05 Starting API server on :8080
 ----
 
-State Guard is loaded with default models, that will be used by this exercise.
+State Guard is loaded with default models that will be used by this exercise.
 
 == Webhook
 
-State Guard emits HTTP events that will be received by Ansible Rulebook. Open another terminal with this repository as a current directory and run:
+State Guard emits HTTP events that will be received by Ansible Rulebook. Open another terminal with this repository as the current directory and run:
 
 [source,bash]
 ----
@@ -94,18 +94,18 @@ Ansible rulebook starts silently. You will see incoming events.
 
 == Asset registration
 
-To model exemplary system we need to register three assets: node, os, and app. I'll use Ansible playbook to do this. The playbook uses toolchain.fsm.asset_register role to perform initial registration followed by synthetic state transitions to STARTING, and RUNNING states.
+To model an exemplary system, we need to register three assets: node, OS, and app. I'll use an Ansible playbook to do this. The playbook uses the toolchain.fsm.asset_register role to perform initial registration followed by synthetic state transitions to STARTING and RUNNING states.
 
 [source,bash]
 ----
 ansible-playbook playbooks/fsm/register_assets.yml
 ----
 
-Asset registration created two results: (1) state guards is now aware of assets, (2) ansible EDA playbooks are triggered by state triggered events.
+Asset registration created two results: (1) the state guard is now aware of assets, and (2) Ansible EDA playbooks are triggered by state-triggered events.
 
 === Assets
 
-To see the assets at the state guards directly use REST API. You may do it from web 'http://localhost:8080/docs#/assets/listAssets' or from CLI.
+To see the assets at the state guard directly, use the REST API. You may do it from the web at 'http://localhost:8080/docs#/assets/listAssets' or from the CLI.
 
 [source,bash]
 ----
@@ -165,7 +165,7 @@ curl -s http://localhost:8080/api/v1/assets  | jq
 
 === Events
 
-Now take a look at rulebook terminal to see the events generated by the state guard.
+Now take a look at the rulebook terminal to see the events generated by the state guard.
 
 ----
 [WARNING]: Found both group and host with same name: localhost
@@ -281,7 +281,7 @@ PLAY RECAP *********************************************************************
 localhost                  : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
 ----
 
-During this initial phase of the exercise you just learned critical elements of the system:
+During this initial phase of the exercise, you just learned critical elements of the system:
 
 . State Guard process that takes care of state transitions acting as a guardian element
 
@@ -291,7 +291,7 @@ During this initial phase of the exercise you just learned critical elements of 
 
 == Stopping the system
 
-After initial registration with synthetic start we would like to stop the system. Operator uses os_stop role provided by a platform team. Note that for simplicity playbook works on a `localhost` and stop action is just a pause for 5 seconds.
+After initial registration with synthetic start, we would like to stop the system. The operator uses the os_stop role provided by the platform team. Note that for simplicity, the playbook works on `localhost` and the stop action is just a pause for 5 seconds.
 
 [source,bash]
 ----
@@ -339,14 +339,14 @@ Again his action is rejected; this time by a state guard.
 
 === Proper stop order
 
-Operating system (host) is element of a software stack that is installed on a node, and its lifecycle is tightly coupled with the stack. As top level asset in this model is node (for simplicity), operator need to request STOPPING state for the node.
+The operating system (host) is an element of a software stack that is installed on a node, and its lifecycle is tightly coupled with the stack. As the top-level asset in this model is the node (for simplicity), the operator needs to request the STOPPING state for the node.
 
 [source,bash]
 ----
 ansible-playbook playbooks/node/request_node_stop.yml 
 ----
 
-Having node in STOPPING state operator can stop the os and application.
+Having the node in STOPPING state, the operator can stop the OS and application.
 
 [source,bash]
 ----
@@ -355,25 +355,25 @@ ansible-playbook playbooks/node/node_stop.yml
 
 Now the node is stopped. Users are informed that service is unavailable.
 
-This is a theoretical scenario that in reality is of course more complex. The point is that OS operations are covered by an Ansible role, that validates the resource state. The stop is not possible without a proper context.
+This is a theoretical scenario that in reality is, of course, more complex. The point is that OS operations are covered by an Ansible role that validates the resource state. The stop is not possible without a proper context.
 
 == Starting the system
 
-Starting the system is protected in the same way. Operator need to request STARTING state.
+Starting the system is protected in the same way. The operator needs to request the STARTING state.
 
 [source,bash]
 ----
 ansible-playbook playbooks/node/request_node_start.yml 
 ----
 
-, to be able to start the node.
+This allows the operator to start the node.
 
 [source,bash]
 ----
-ansible-playbook playbooks/node/request_node_start.yml 
+ansible-playbook playbooks/node/node_start.yml 
 ----
 
-Look at state guard console to see transitions to RUNNING triggering webhooks.
+Look at the state guard console to see transitions to RUNNING triggering webhooks.
 
 ----
 2025/10/20 21:10:42 [Ryszards-MacBook-Pro.local/abcVwd5Kn1-000057] "GET http://localhost:8080/api/v1/assets/node1 HTTP/1.1" from [::1]:63378 - 200 282B in 1.445917ms
@@ -387,7 +387,7 @@ Look at state guard console to see transitions to RUNNING triggering webhooks.
 2025/10/20 21:10:44 [Ryszards-MacBook-Pro.local/abcVwd5Kn1-000062] "POST http://localhost:8080/api/v1/assets/app1/transition HTTP/1.1" from [::1]:63385 - 200 94B in 832.292µs
 ----
 
-Now look at Ansible EDA terminal to see that all three resources moved to RUNNING state.
+Now look at the Ansible EDA terminal to see that all three resources moved to RUNNING state.
 
 ----
         "payload": {
@@ -406,13 +406,15 @@ The presented scenario illustrates a powerful pattern where Ansible playbooks ex
 
 Instead of embedding all validation rules within playbooks, the State Guard becomes a shared control authority enforcing lifecycle order, dependencies, and safe transitions. In this model, the logic is protected by the FSM — not the other way around — ensuring that automation cannot violate operational policies or perform unsafe actions.
 
-The webhook presented in this scenario plays an additional role — it acts as a bridge between the State Guard and Ansible EDA, transforming each validated state transition into an actionable event. This enables FSM driven orchestration, where every component reacts immediately to state evolution while remaining under strict governance of the FSM.
+The webhook presented in this scenario plays an additional role — it acts as a bridge between the State Guard and Ansible EDA, transforming each validated state transition into an actionable event. This enables FSM-driven orchestration, where every component reacts immediately to state evolution while remaining under strict governance of the FSM.
 
-Webhooks may be used to convert FSM into orchestration engine, when all states will be associated with business action. On this stage FSM handles on_entry and on_exit for a given state, however going into orchestration engine direction it may be necessary to react not on a state only, by tuple from->to, having coverage for each transition in the FSM.
+Webhooks may be used to convert FSM into an orchestration engine when all states will be associated with business actions. At this stage, FSM handles on_entry and on_exit for a given state; however, going into the orchestration engine direction, it may be necessary to react not on a state only, but by tuple from→to, having coverage for each transition in the FSM.
 
-Ansible EDA provides a convenient, low‑latency way to trigger playbooks by running a long‑lived service that listens for events. The trade‑off is operational ownership: you manage RBAC integration, process supervision, scaling/concurrency, secrets, log capture/retention, and playbook upgrade.
+There is common temptation to use FSM as orchestration engine itself. This is not possible. FSM is not Turing Machine. It is a very specialized function to control asset's state; however, it is not meant to control the logic flow. FSM is a data model on a different level of abstraction than Turing Machine. Each asset should be associated with a state automaton and the orchestration.
 
-Alternatively, you can invoke GitHub Actions via REST to run playbooks in a managed CI environment, which fits GitHub‑centric workflows and offers built‑in execution isolation, audit logs, RBAC, and retention/observability — at the cost of higher start‑up latency and queueing semantics. 
+Ansible EDA provides a convenient, low-latency way to trigger playbooks by running a long-lived service that listens for events. The trade-off is operational ownership: you manage RBAC integration, process supervision, scaling/concurrency, secrets, log capture/retention, and playbook upgrade.
+
+Alternatively, you can invoke GitHub Actions via REST to run playbooks in a managed CI environment, which fits GitHub centric workflows and offers built-in execution isolation, audit logs, RBAC, and retention/observability — at the cost of higher start-up latency and queueing semantics. 
 
 For a fully managed Ansible runtime with policy, inventory, scheduling, and analytics, consider Red Hat Ansible Automation Platform (formerly Tower).
 
@@ -420,18 +422,24 @@ For a fully managed Ansible runtime with policy, inventory, scheduling, and anal
 
 . State Guard process takes care of state transitions acting as a guardian element
 
-. Ansible toolchain.fsm roles interacts with the state guard via REST API
+. State Guard should be extended by state guards to enforce business rules like maintenance window, dependencies, etc. The critical is dependency what will make it possible to model `service/nodes/resources` relationship.
 
-. Ansible teams' owned roles uses toolchain.fsm to protect itself from state related mistakes
+. Ansible toolchain.fsm roles interact with the state guard via REST API
 
-. Webhooks informs external processes about reaching or leaving a state - good for notification
+. Ansible teams' owned roles use toolchain.fsm to protect themselves from state-related mistakes
 
-. Webhook is not aware of transition (from->to) what disables it from triggering an unambiguous actions; failed->running is a different action that stopped->running.  
+. Ansible role provides a convenient way to separate operational responsibility belonging to different teams.
 
-. Event Driven Ansible to invoke playbooks via HTTP request, what may be covered by GitHub workflow or Ansible Automation Platform.
+. Webhooks inform external processes about reaching or leaving a state — good for notification
 
-. Finite State Machine (FSM) is not an orchestration engine (Turing Machine). It covers very specialized function to control asset's state, however is not meant to control the logic flow.
+. Webhook is not aware of transition (from→to), which disables it from triggering unambiguous actions; failed→running is a different action than stopped→running.  
+
+. Event Driven Ansible to invoke playbooks via HTTP request, which may be covered by GitHub workflow or Ansible Automation Platform.
+
+. Finite State Machine (FSM) is not an orchestration engine (Turing Machine). It covers a very specialized function to control asset's state; however, it is not meant to control the logic flow.
 
 . Orchestration engine is another capability that is able to control the logic flow. It cooperates with FSM to control the logic flow based on the state of the assets.
 
-. Automata theory defines FSM and TM (Turing Machine) as  models on different levels of abstraction. TM may implement FSM, but FSM is not able to implement TM.
+. Automata theory defines FSM and TM (Turing Machine) as models on different levels of abstraction. TM may implement FSM, but FSM is not able to implement TM.
+
+. Asset should be associated with a state automaton and the orchestration logic.
