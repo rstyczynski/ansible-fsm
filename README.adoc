@@ -4,34 +4,29 @@
 
 == Overview
 
-This document explains how to process asset stop and start operations in a multi-layer system managed by multiple teams. As an example, consider a system composed of an operating system and an application installed on a service node. The node is a logical entity that groups together resources accessible at a single access address. Applications may be deployed in a cluster across multiple nodes.
+This document explains how to process asset `stop`` and `start`` operations in a multi-layer application managed by multiple teams, where the application is owned by the application team (SaaS) and the node and operating system are owned by the platform team (PaaS).
 
-The application is owned by the application team (SaaS) and the node and operating system are owned by the platform team (PaaS).
+As an example, consider a system composed of an operating system and an application installed on a service node. The node is a logical entity that groups together resources accessible at a single access address. Applications may be deployed in a cluster across multiple nodes. Fro the sake of this exercise, we will model the system as a single node with a single application and a single operating system. The exercise is supported by a state guard, that implements finite state machine and an Ansible EDA playbook to trigger Ansible Playbooks by state machine events.
+
 
 == Operational state
 
-Each element is represented by its operational state, e.g., running or stopped, to enumerate only the basic two. Moreover, a node is represented by the degraded state to indicate work on a limited number of nodes. Two simple rules are in place:
+Each element is represented by its operational state e.g. `running` or `stopped`, to enumerate only the basic two. Moreover, a node is represented by the degraded state to indicate work on a limited number of nodes. Two simple rules are in place:
 
 . Node is running when the OS and app are running.
 . Node is stopped when one of the OS or app is stopped.
 
 image::doc/images/node.jpg[Node Architecture,width=300]
 
-== Stopping and starting the system
-
-Based on the state rules, the platform team must always validate both the node and application states before stopping the operating system. This rule prevents application data corruption that could result from an abrupt (hard) stop. In this case, the node depends on the application, and the stop process relies on the node's state. Technical teams may proceed only when the node's state is STOPPING. The node moves to STOPPED when both the OS and app are in STOPPED state.
-
-Starting the system follows the reverse order. In this case, the node depends on the application's state, which in turn depends on the operating system's state — yet the overall control remains at the node level. When the node's state moves to STARTING, the operating system first transitions to RUNNING, followed by the application moving to RUNNING as well.
-
 == State Guard
 
-The resource state is modeled using the finite state machine (FSM) paradigm, which defines the allowed flow of state changes. This model enables the implementation of a state guard service — a mechanism that prevents critical operations from being executed at inappropriate times (for example, stopping a system that is currently in production).
+The resource state is modeled using the finite state machine (FSM) paradigm, which defines the allowed flow of state changes. This model enables the implementation of a state guard service — a mechanism that prevents critical operations from being executed at inappropriate times (for example, stopping a system that is currently in production). The state guard is responsible for validating state transitions and sending notifications.
 
 image::doc/images/fsm.jpg[Finite State Machine]
 
 === Starting State Guard
 
-The State Guard is hosted on GitHub and is freely available. Clone it to get the code.
+The State Guard was developed using Claude Code (claude.ai/code) especially to support this scenario and is hosted on GitHub. Clone it to get the code.
 
 [source,bash]
 ----
@@ -92,9 +87,20 @@ ansible-rulebook -r hello_rulebook_url.yml -i inventory.ini -S .
 
 Ansible rulebook starts silently. You will see incoming events.
 
+
+== Stopping and starting the system
+
+Based on the state rules, the platform team must always validate both the node and application states before stopping the operating system. This rule prevents application data corruption that could result from an abrupt (hard) stop. In this case, the node depends on the application, and the stop process relies on the node's state. Technical teams may proceed only when the node's state is STOPPING. The node moves to STOPPED when both the OS and app are in STOPPED state.
+
+Node (STOPPED) → APP (STOPPED) → OS (STOPPED)
+
+Starting the system follows the reverse order. In this case, the node depends on the application's state, which in turn depends on the operating system's state — yet the overall control remains at the node level. When the node's state moves to STARTING, the operating system first transitions to RUNNING, followed by the application moving to RUNNING as well.
+
+OS (RUNNING) → APP (RUNNING) → NODE (RUNNING)
+
 == Asset registration
 
-To model an exemplary system, we need to register three assets: node, OS, and app. I'll use an Ansible playbook to do this. The playbook uses the toolchain.fsm.asset_register role to perform initial registration followed by synthetic state transitions to STARTING and RUNNING states.
+To model the exemplary system, we need to register three assets: node, OS, and app. I'll use an Ansible playbook to do this. The playbook uses the toolchain.fsm.asset_register role to perform initial registration followed by synthetic state transitions to STARTING and RUNNING states.
 
 [source,bash]
 ----
